@@ -74,9 +74,9 @@ class CheckRegistrationMiddleware(BaseMiddleware):
                 ic('не ягодка')
                 return await handler(event, data)
 
-        if isinstance(event, Message) and any(word in event.text.lower() for word in ['ягодка', 'джарвел']) and user_is_exists(user_id=self.user_id):
-            ic('ягодка но пользователь зареган')
-            return await handler(event, data)
+            if isinstance(event, Message) and any(word in event.text.lower() for word in ['ягодка', 'джарвел']) and user_is_exists(user_id=self.user_id):
+                ic('ягодка но пользователь зареган')
+                return await handler(event, data)
 
         if user_is_exists(user_id=self.user_id):
             ic("пользователь зареган")

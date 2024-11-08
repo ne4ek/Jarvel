@@ -132,4 +132,5 @@ src/storage/*.mp4
 *.env_prod
 *.ics
 src/test.py
-.__pycache__/
+./__pycache__/
+*/__pycache__/
