@@ -1,0 +1,3 @@
+from infrastructure.validators_impl.meetings_validator import MeetingsValidatorImpl
+
+meeting_validator = MeetingsValidatorImpl()

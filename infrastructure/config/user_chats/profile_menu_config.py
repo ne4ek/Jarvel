@@ -1,0 +1,7 @@
+from application.profile_menu.services.profile_menu_service import ProfileMenuService
+from application.telegram.handlers.user_chats.user_chat_menu.profile_menu_handlers import ProfileMenuHandlers
+from infrastructure.config.repository_provider_async_config import repositroties_dependency_provider_async
+
+profile_menu_service = ProfileMenuService(repository_provider=repositroties_dependency_provider_async)
+profile_menu_handlers = ProfileMenuHandlers(profile_menu_service=profile_menu_service)
+profile_menu_router = profile_menu_handlers.get_router()

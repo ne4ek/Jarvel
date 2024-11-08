@@ -1,0 +1,14 @@
+from application.telegram.handlers.user_chats.user_chat_menu.user_chat_mailing_handlers import UserChatMailingHandlers
+from application.telegram.handlers.user_chats.user_chat_menu.user_chat_mail_inbox_handlers import UserChatMailInboxHandlers
+from application.mailing.services.user_chat_mail_inbox_service import UserChatInboxService
+from application.mailing.services.user_chat_mailing_service import UserChatMailingService
+from infrastructure.config.repository_provider_async_config import repositroties_dependency_provider_async
+
+user_chat_mailing_service = UserChatMailingService(repository_provider=repositroties_dependency_provider_async)
+user_chat_inbox_service = UserChatInboxService()
+
+user_chat_mailing_handlers = UserChatMailingHandlers(user_chat_mailing_service)
+user_chat_mail_inbox_handlers = UserChatMailInboxHandlers(user_chat_inbox_service)
+
+user_chat_mailing_router = user_chat_mailing_handlers.get_router()
+user_chat_mail_inbox_router = user_chat_mail_inbox_handlers.get_router()

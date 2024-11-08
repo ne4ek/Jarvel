@@ -1,0 +1,6 @@
+from infrastructure.config.bot_config import bot
+from infrastructure.interfaces_impl.email_sender_impl import EmailMailSenderImpl
+from infrastructure.interfaces_impl.telegram_sender_impl import TelegramMailSenderImpl
+
+telegram_sender_interface = TelegramMailSenderImpl(bot=bot)
+email_sender_interface = EmailMailSenderImpl(bot=bot)
