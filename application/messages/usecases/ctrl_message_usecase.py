@@ -5,6 +5,7 @@ import pytz
 from domain.entities.ctrl_message import CtrlMessage
 from application.messages.services.ctrl_job_service import CtrlJobService
 from application.providers.repositories_provider import RepositoriesDependencyProvider
+from icecream import ic
 class CtrlMessageUseCase:
     def __init__(self, ctrl_job_service: CtrlJobService, repositories_provider: RepositoriesDependencyProvider):
         self.ctrl_job_service = ctrl_job_service
@@ -12,17 +13,18 @@ class CtrlMessageUseCase:
 
     async def execute(self, text: str, message_id: int, chat_id: int, bot_username: str, sender_username: str):
         w, d, h, m = 0, 0, 0, 0
-        
         for line in text.split("\n"):
             if bot_username in line and "ctrl" in line.lower():
                 text = line
                 break
         else:
             return
-        
-        mentioned_users = re.findall(r"@\w+", text)
-        mentioned_users = [user for user in mentioned_users if user != bot_username]
-        
+        _mentioned_users = re.findall(r"@\w+", text)
+        mentioned_users = []
+        for user in _mentioned_users:
+            if user != '@' + bot_username and user not in mentioned_users:
+                mentioned_users.append(user)
+
         ctrl_text = re.search(r"ctrl (.*)", text.lower())
         ctrl_text = ctrl_text.group(1) if ctrl_text else "24"
         if ctrl_text != "24":

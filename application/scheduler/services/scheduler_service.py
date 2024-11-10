@@ -10,10 +10,7 @@ class SchedulerService:
         self.scheduler = scheduler
     
     def add_job(self, job: Job) -> None:
-        current_datetime = datetime.datetime.now(pytz.utc).astimezone(pytz.timezone('Europe/Moscow'))
         job_time = job.run_date
-        #if current_datetime > job_time:
-        #    return
         
         func = job.func
         args = job.args

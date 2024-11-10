@@ -1,7 +1,8 @@
 from aiogram import BaseMiddleware
 from typing import Callable, Dict, Any, Awaitable
 from aiogram.types import TelegramObject, Message, CallbackQuery
-
+from aiogram.exceptions import TelegramMigrateToChat, TelegramNetworkError
+from aiogram.types import BotCommand
 from db.postgresql_handlers.group_chat_db_handler import is_group_chat_in_company
 from db.postgresql_handlers.users_db_handler import user_is_exists
 from icecream import ic
@@ -31,7 +32,17 @@ class CheckRegistrationMiddleware(BaseMiddleware):
         
         self.user_id = data["event_from_user"].id
         self.chat_id = data["event_chat"].id
-        self.bot_commands = await event.bot.get_my_commands()
+        # ic(handler)
+        # ic(event)
+        try:
+            self.bot_commands = await event.bot.get_my_commands(request_timeout=40)
+        except TelegramNetworkError as e:
+            ic(str(e))
+            self.bot_commands = [
+                                BotCommand(command='main_menu', description='Открыть главное меню'),
+                                BotCommand(command='add_chat_to_company', description='Добавить групповой чат в компанию'),
+                                BotCommand(command='registration', description='Регистрация в боте')
+                                ]
         self.bot_commands = ["/" + command.command for command in self.bot_commands]
         if isinstance(event, Message):
             if self.is_group_chat(self, data):
@@ -49,6 +60,7 @@ class CheckRegistrationMiddleware(BaseMiddleware):
 
     @staticmethod
     async def handle_group_chat(self, handler, event, data):
+        ic(event.text)
         if event.voice or event.video_note or event.document or event.video or event.photo or event.audio:
             return await handler(event, data)
 
@@ -66,6 +78,7 @@ class CheckRegistrationMiddleware(BaseMiddleware):
             return
 
         if event.text and 'ctrl' in event.text.lower():
+            # ic(event)
             ic('ctrl')
             return await handler(event, data)
         # ic(event)
@@ -81,8 +94,10 @@ class CheckRegistrationMiddleware(BaseMiddleware):
         if user_is_exists(user_id=self.user_id):
             ic("пользователь зареган")
             return await handler(event, data)
+        if event.text is None:
+            return
+        ic('не пустили1')
 
-        ic('не пустили')
         await self.send_user_registration_message(event)
 
     @staticmethod
@@ -107,8 +122,7 @@ class CheckRegistrationMiddleware(BaseMiddleware):
                     return await handler(event, data)
             except Exception as e:
                 pass
-            ic('не пустили')
-
+            ic('не пустили2')
             await self.send_user_registration_message(event)
 
     
@@ -131,7 +145,10 @@ class CheckRegistrationMiddleware(BaseMiddleware):
 """
         file_id = "BAACAgIAAx0CfWptYgACD41mubXFrUKXkciPQKVkFtJyutupwgACD1IAAjN4qUmXcbLKm-gv7zUE"
         if isinstance(event, Message):
-            await event.answer(message_text)
+            try:
+                await event.answer(message_text)
+            except TelegramMigrateToChat as e:
+                pass
 
 
     @staticmethod

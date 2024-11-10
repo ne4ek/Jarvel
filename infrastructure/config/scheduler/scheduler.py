@@ -4,4 +4,4 @@ import pytz
 
 
 scheduler = AsyncIOScheduler(timezone=pytz.timezone('Europe/Moscow'))
-scheduler_service = SchedulerService(scheduler)
+scheduler_service = SchedulerService(scheduler) 

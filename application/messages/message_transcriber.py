@@ -1,6 +1,7 @@
 import torch
 import os
 from aiogram import types, Bot
+from aiogram.exceptions import TelegramBadRequest
 from const import DIRNAME, VOICE_WORDS
 from ai.summarization_prompts import summarization_prompt
 from infrastructure.config.bot_config import bot
@@ -30,8 +31,8 @@ class TranscribeTelegramMessage:
             duration = message.voice.duration
         elif message.video_note:
             duration = message.video_note.duration
-        if duration > 600:
-            raise DurationTooLongError("Voice/video_note duration is over 600 seconds")
+        if duration > 6000:
+            raise DurationTooLongError("Voice/video_note duration is over 6000 seconds")
         
         fp_disk = await self.__save_voice_message(message)
         fp_disk_voice_only = self.__get_voice_only(audio_file_path=fp_disk)
@@ -166,7 +167,10 @@ def audio_to_text_converter(handler):
                                 await message.reply(bot_message_text_splited)
                 await handler(self, transcribed_message, *args, **kwargs)
             except Exception as e:
-                await message.reply("Речь не распознана")
+                try:
+                    await bot_message.edit_text("Речь не распознана")
+                except TelegramBadRequest as te:
+                    return
                 await handler(self, message, *args, **kwargs)
                 raise e
         else:

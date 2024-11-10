@@ -91,7 +91,6 @@ class TelegramMessageService:
         msg.replied_message_id = message.reply_to_message.message_id if message.reply_to_message else None
         msg.chat_id = message.chat.id
         msg.message_id = message.message_id
-        # ic(msg)
         return msg
 
     async def __generate_assistant_messages(self, chat_id: int, bot_id: int, n_messages: int):
@@ -138,25 +137,19 @@ message: {text}
         '<style'
     ]
     
-        # Проходим по каждому тегу и заменяем его экранированную версию на оригинал
         for tag in tags_to_escape:
-            # Экранируем тег в исходном тексте
             escaped_tag = html.escape(tag)
             text.replace(tag, escaped_tag)
         
         text = re.sub(r'^(.*)\n={2,}$', r'<h1>\1</h1>', text, flags=re.MULTILINE)
         text = re.sub(r'^(.*)\n-{2,}$', r'<h2>\1</h2>', text, flags=re.MULTILINE)
 
-        # Замена жирного текста
         text = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', text)
 
-        # Замена курсивного текста
         text = re.sub(r'\*(.*?)\*', r'<em>\1</em>', text)
 
-        # Замена списков
         text = re.sub(r'(?m)^\- (.*)$', r'<li>\1</li>', text)
 
-        # Оборачивание элементов списка в <ul>
         text = re.sub(r'(?s)(<li>.*?</li>)', r'<ul>\1</ul>', text)
         allowed_tags = [
             'b', 'strong', 'i', 'em', 'code', 's', 'strike', 'del', 'u', 'pre'
@@ -165,16 +158,13 @@ message: {text}
         def replace_tag(match):
             tag = match.group(1)
             if tag in allowed_tags:
-                return match.group(0)  # Возвращаем разрешенный тег без изменений
+                return match.group(0)
             else:
-                return html.escape(match.group(0))  # Экранируем неразрешенный тег
+                return html.escape(match.group(0))
         escaped_message = tag_pattern.sub(replace_tag, text)
-        # ic(escaped_message)
         return escaped_message
 
 
     async def save_message(self, message: Union[TranscribedMessage, types.Message]):
-        #is_group_saved = await self.group_chat_repository.is_chat_id_exists(chat_id=message.chat.id)
-        #if is_group_saved:
         message_entity = await self.__get_message_entity(message)
         await self.message_repository.save(message_entity)

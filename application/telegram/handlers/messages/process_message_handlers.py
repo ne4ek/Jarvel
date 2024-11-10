@@ -22,14 +22,19 @@ class ProcessMessageHandlers:
 
     async def ctrl_message_handler(self, message: types.Message):
         #TODO: Доделать обработку ctrl
+        ic("ctrl_message_handler", message)
         if message.forward_from:
             return
+        text = message.text
+        if message.reply_to_message:
+            replyed_message = message.reply_to_message
+            text = f"@{replyed_message.from_user.username}  {replyed_message.text} {text}"
         bot = await message.bot.get_me()
         bot_username = bot.username
         sender_username = "@" + message.from_user.username
         message_id = message.message_id
         chat_id = message.chat.id
-        ctrl_result = await self.message_service.process_ctrl(message_id, chat_id, message.text, bot_username, sender_username)
+        ctrl_result = await self.message_service.process_ctrl(message_id, chat_id, text, bot_username, sender_username)
         
         if not ctrl_result:
             return
