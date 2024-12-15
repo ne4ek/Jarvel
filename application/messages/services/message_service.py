@@ -82,12 +82,13 @@ class TelegramMessageService:
         return await self.company_repository.get_company_code_by_chat_id(chat_id)
 
     async def __get_message_entity(self, message: Union[TranscribedMessage, types.Message]):
+        msg_text = message.text or message.caption
         msg = Message()
         msg.chat_message_id = message.message_id
         msg.author_id = message.from_user.id
         
         msg.company_code = await self.company_repository.get_company_code_by_chat_id(message.chat.id)
-        msg.text = message.text
+        msg.text =  msg_text
         msg.date = message.date
         msg.replied_message_id = message.reply_to_message.message_id if message.reply_to_message else None
         msg.chat_id = message.chat.id

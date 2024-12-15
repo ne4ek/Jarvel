@@ -42,13 +42,13 @@ class ProcessMessageHandlers:
 
     @audio_to_text_converter
     async def message_handler(self, message: types.Message, state: FSMContext):
-        
-        bot = message.bot
-        if message.text:
+        message_text = message.text or message.caption
+        if message_text:
             await self.message_service.save_message(message)
+            #canceling the replay response to a decrypted message
             # if message.reply_to_message and message.reply_to_message.from_user.id == bot.id and "Расшифрованное сообщение:" in message.reply_to_message.text:
             #     return
-            if not (self.message_service.is_bot_mentioned(message.text) or (message.reply_to_message and message.reply_to_message.from_user.id == message.bot.id)):
+            if not (self.message_service.is_bot_mentioned(message_text) or (message.reply_to_message and message.reply_to_message.from_user.id == message.bot.id)):
                 return
             bot_message = await message.reply(text="Обрабатываю запрос...")
             response: dict = await self.message_service.call_assistant(bot_message, message, state)

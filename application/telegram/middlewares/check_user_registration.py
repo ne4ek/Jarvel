@@ -61,7 +61,7 @@ class CheckRegistrationMiddleware(BaseMiddleware):
     @staticmethod
     async def handle_group_chat(self, handler, event, data):
         ic(event)
-        if event.voice or event.video_note or event.document or event.video or event.photo or event.audio:
+        if event.voice or event.video_note or event.document or event.video or event.audio:
             ic(handler)
             return await handler(event, data)
 
@@ -82,14 +82,27 @@ class CheckRegistrationMiddleware(BaseMiddleware):
             ic('ctrl')
             return await handler(event, data)
 
-        if event.text is not None:
-            if not any(word.lower() in event.text.lower() for word in ['ягодка', 'джарвел']):
+        text_to_check = event.text or event.caption
+        ic(text_to_check)
+        if text_to_check:
+            if not any(word.lower() in text_to_check.lower() for word in ['ягодка', 'джарвел']):
                 ic('не ягодка')
                 return await handler(event, data)
 
-            if isinstance(event, Message) and any(word in event.text.lower() for word in ['ягодка', 'джарвел']) and user_is_exists(user_id=self.user_id):
+            if isinstance(event, Message) and any(word in text_to_check.lower() for word in ['ягодка', 'джарвел']) and user_is_exists(user_id=self.user_id):
                 ic('ягодка но пользователь зареган')
+                ic(data)
                 return await handler(event, data)
+            
+
+        # if event.text is not None:
+        #     if not any(word.lower() in event.text.lower() for word in ['ягодка', 'джарвел']):
+        #         ic('не ягодка')
+        #         return await handler(event, data)
+
+        #     if isinstance(event, Message) and any(word in event.text.lower() for word in ['ягодка', 'джарвел']) and user_is_exists(user_id=self.user_id):
+        #         ic('ягодка но пользователь зареган')
+        #         return await handler(event, data)
 
         if user_is_exists(user_id=self.user_id):
             ic("пользователь зареган")
