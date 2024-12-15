@@ -20,7 +20,6 @@ class OfflineTalker(Talker):
             model=self.model,
             temperature=self.temperature
         )
-        ic(response)
         response = response.choices[0].message.content
         ic(response)        
         return response

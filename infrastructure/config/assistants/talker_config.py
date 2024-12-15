@@ -7,7 +7,7 @@ from infrastructure.providers_impl.function_calls_provider_impl import FunctionC
 from infrastructure.config.repository_provider_async_config import repositroties_dependency_provider_async
 from dotenv import load_dotenv
 import os
-
+from icecream import ic
 load_dotenv()
 
 offline_talker = OfflineTalker(api_key=os.getenv("GPT_API_KEY"),

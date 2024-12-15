@@ -60,8 +60,9 @@ class CheckRegistrationMiddleware(BaseMiddleware):
 
     @staticmethod
     async def handle_group_chat(self, handler, event, data):
-        ic(event.text)
+        ic(event)
         if event.voice or event.video_note or event.document or event.video or event.photo or event.audio:
+            ic(handler)
             return await handler(event, data)
 
         if event.text and any(command in event.text for command in ['/add_chat_to_company']):
@@ -78,10 +79,9 @@ class CheckRegistrationMiddleware(BaseMiddleware):
             return
 
         if event.text and 'ctrl' in event.text.lower():
-            # ic(event)
             ic('ctrl')
             return await handler(event, data)
-        # ic(event)
+
         if event.text is not None:
             if not any(word.lower() in event.text.lower() for word in ['ягодка', 'джарвел']):
                 ic('не ягодка')

@@ -2,7 +2,7 @@ import torch
 import os
 from typing import Union
 from aiogram import types, Bot
-from const import DIRNAME
+from const import DIRNAME, MAX_VOICE_DURATION
 from audio_extract import extract_audio
 from openai import AsyncOpenAI
 from application.messages.custom_errors.duration_error import DurationTooLongError
@@ -21,8 +21,8 @@ class TranscribeTelegramMessage:
             duration = message.voice.duration
         elif message.video_note:
             duration = message.video_note.duration
-        if duration > 600:
-            raise DurationTooLongError("Voice/video_note duration is over 600 seconds")
+        if duration > MAX_VOICE_DURATION:
+            raise DurationTooLongError(f"Voice/video_note duration is over {MAX_VOICE_DURATION} seconds")
         
         fp_disk = await self.__save_voice_message(message)
         fp_disk_voice_only = self.__get_voice_only(audio_file_path=fp_disk)

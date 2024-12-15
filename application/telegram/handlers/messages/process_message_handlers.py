@@ -46,8 +46,8 @@ class ProcessMessageHandlers:
         bot = message.bot
         if message.text:
             await self.message_service.save_message(message)
-            if message.reply_to_message and message.reply_to_message.from_user.id == bot.id and "Расшифрованное сообщение:" in message.reply_to_message.text:
-                return
+            # if message.reply_to_message and message.reply_to_message.from_user.id == bot.id and "Расшифрованное сообщение:" in message.reply_to_message.text:
+            #     return
             if not (self.message_service.is_bot_mentioned(message.text) or (message.reply_to_message and message.reply_to_message.from_user.id == message.bot.id)):
                 return
             bot_message = await message.reply(text="Обрабатываю запрос...")
@@ -58,6 +58,7 @@ class ProcessMessageHandlers:
                     parse_mode = response.get("parse_mode") if "parse_mode" in response.keys() else ParseMode.HTML
                 else:
                     parse_mode = ParseMode.HTML
+                ic(parse_mode)
                 bot_message = await bot_message.edit_text(text=response.get("message"), reply_markup=response.get("keyboard"), parse_mode=parse_mode)
                 await self.message_service.save_message(bot_message)
             except TelegramBadRequest as tbr:

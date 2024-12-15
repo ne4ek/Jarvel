@@ -10,9 +10,16 @@ group_chat_repository = repositroties_dependency_provider_async.get_group_chats_
 user_chat_repository = repositroties_dependency_provider_async.get_user_chats_repository()
 
 def group_chat_callback_decorator(handler):
-    #Decorator that checks user registration and group chat company registration
     @wraps(handler)
     async def wrapper(self, callback: types.CallbackQuery, *args, **kwargs):
+
+        if callback.message.reply_to_message:
+            reply_user_id = callback.message.reply_to_message.from_user.id
+        callback_user_id = callback.from_user.id
+        if callback_user_id != reply_user_id:
+            await callback.answer()
+            return 
+        
         chat_id = callback.message.chat.id
         is_group_chat_aassigned_to_company = await group_chat_repository.is_group_chat_assigned_to_company(chat_id)
         if not is_group_chat_aassigned_to_company:

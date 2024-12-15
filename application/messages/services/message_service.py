@@ -63,6 +63,7 @@ class TelegramMessageService:
                 message = ("Для использования этой функции вам необходимо зарегистрировать данный чат в компании\n"
                           "Используйте команду /add_chat_to_company <Код компании>\n\n"
                           "Вставьте вместо <Код компании> код (без угловых скобок), который вы получили при создании компании")
+                return #временно выклюенно 
                 return {"message": message, "keyboard": None, "parse_mode": None}
             job_entity = await assistant.get_all_parameters(messages=messages,
                                                             company_code=company_code)

@@ -9,4 +9,4 @@ class SummarizeMessage:
         self.temperature = temperature
 
     async def execute(self, text: str):
-        x
+        pass

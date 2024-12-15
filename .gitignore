@@ -134,3 +134,4 @@ src/storage/*.mp4
 src/test.py
 ./__pycache__/
 */__pycache__/
+*.log

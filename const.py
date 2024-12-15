@@ -95,6 +95,10 @@ CTRL_MESSAGES = [
     "Апаю",
 ]
 
+CTRL_MESSAGES_JOKES = [
+    
+]
+
 BOT_MENTIONS = ["джарвел", "ягодка"]
 
 DIRNAME = os.path.dirname(__file__)
@@ -108,3 +112,8 @@ TASK_STATUSES = ["active", "overdue"]
 
 
 ALL_MEETINGS_LIST_STATUSES = ["pending", "cancelled", "complete"]
+
+
+MAX_MESSAGE_LENGTH = 4096
+MAX_VOICE_DURATION = 6000
+MAX_VOICE_DURATION_FOR_SUMMARIZE = 20
