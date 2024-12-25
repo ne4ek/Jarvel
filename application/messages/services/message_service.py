@@ -9,6 +9,7 @@ from ai.assistants.distributor.distributor import Distributor
 from ai.assistants.talker.talker import Talker
 from ai.arbitrary_data_manager.arbitrary_data_manager import ArbitraryDataManager
 from domain.entities.transcribed_message import TranscribedMessage
+from domain.entities.group_chat import GroupChat
 from icecream import ic
 import re
 import html
@@ -60,11 +61,11 @@ class TelegramMessageService:
         else:
             company_code = await self.__get_company_code(user_message.chat.id)
             if not company_code:
-                message = ("Для использования этой функции вам необходимо зарегистрировать данный чат в компании\n"
-                          "Используйте команду /add_chat_to_company <Код компании>\n\n"
-                          "Вставьте вместо <Код компании> код (без угловых скобок), который вы получили при создании компании")
-                return #временно выклюенно 
-                return {"message": message, "keyboard": None, "parse_mode": None}
+                #this is a temporary solution
+                await self.__add_group_chat_to_Belomorie(bot_message)
+                # message = ("Для использования этой функции вам необходимо зарегистрировать данный чат в компании\n"
+                #           "Используйте команду /add_chat_to_company")
+                # return {"message": message, "keyboard": None, "parse_mode": None}
             job_entity = await assistant.get_all_parameters(messages=messages,
                                                             company_code=company_code)
             await state.update_data({str(job_entity.__class__.__name__).lower(): {"entity": job_entity, "message": bot_message}})
@@ -95,6 +96,10 @@ class TelegramMessageService:
         msg.message_id = message.message_id
         return msg
 
+    async def __add_group_chat_to_Belomorie(self, message: types.Message):
+        gc = GroupChat(chat_id=message.chat.id, name=message.chat.title , company_code="Belomorie")
+        await self.company_repository.add_group_chat_to_company(gc)
+        
     async def __generate_assistant_messages(self, chat_id: int, bot_id: int, n_messages: int):
         messages: List[Message] = await self.message_repository.get_n_last_messages_by_chat_id(chat_id=chat_id,
                                                                                          bot_id=bot_id,

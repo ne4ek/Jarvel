@@ -2,7 +2,7 @@
 
 
 BOT_TOKEN=
-
+BOT_PORT=
 
 GPT_API_KEY=
 PPLX_API_KEY=

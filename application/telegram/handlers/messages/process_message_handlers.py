@@ -21,7 +21,6 @@ class ProcessMessageHandlers:
         router.message(F.chat.type != "private")(self.message_handler)
 
     async def ctrl_message_handler(self, message: types.Message):
-        #TODO: Доделать обработку ctrl
         ic("ctrl_message_handler", message)
         if message.forward_from:
             return
@@ -45,9 +44,6 @@ class ProcessMessageHandlers:
         message_text = message.text or message.caption
         if message_text:
             await self.message_service.save_message(message)
-            #canceling the replay response to a decrypted message
-            # if message.reply_to_message and message.reply_to_message.from_user.id == bot.id and "Расшифрованное сообщение:" in message.reply_to_message.text:
-            #     return
             if not (self.message_service.is_bot_mentioned(message_text) or (message.reply_to_message and message.reply_to_message.from_user.id == message.bot.id)):
                 return
             bot_message = await message.reply(text="Обрабатываю запрос...")
@@ -62,7 +58,6 @@ class ProcessMessageHandlers:
                 bot_message = await bot_message.edit_text(text=response.get("message"), reply_markup=response.get("keyboard"), parse_mode=parse_mode)
                 await self.message_service.save_message(bot_message)
             except TelegramBadRequest as tbr:
-                # ic(str(tbr))
                 await bot_message.edit_text(text="Ошибка обработки сообщения")
                 raise tbr     
             except Exception as e:

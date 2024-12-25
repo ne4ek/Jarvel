@@ -7,7 +7,7 @@ services:
     depends_on:
       - postgres_db
     ports:
-      - "80:80"
+      - "${BOT_PORT}:${BOT_PORT}"
   postgres_db:
     image: postgres:latest
     container_name: postgres_db
