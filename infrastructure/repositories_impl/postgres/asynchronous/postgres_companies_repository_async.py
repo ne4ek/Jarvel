@@ -100,7 +100,7 @@ class PostgresCompaniesRepositoryAsync(CompaniesRepository):
                     );"""
         result = await connection.fetch(query)
         exists = result[0].get("exists")
-        print(exists)
+        ic(exists)
         return exists
 
     @open_and_close_connection

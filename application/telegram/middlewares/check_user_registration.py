@@ -54,8 +54,7 @@ class CheckRegistrationMiddleware(BaseMiddleware):
 
 
     @staticmethod
-    def is_group_chat(self, data):
-        
+    def is_group_chat(self, data):     
         return str(data["event_chat"].id).startswith("-")
 
     @staticmethod
@@ -64,25 +63,27 @@ class CheckRegistrationMiddleware(BaseMiddleware):
         if event.voice or event.video_note or event.document or event.video or event.audio:
             ic(handler)
             return await handler(event, data)
-
-        if event.text and any(command in event.text for command in ['/add_chat_to_company']):
+        
+        text_to_check = event.text or event.caption
+        
+        if text_to_check and any(command in text_to_check for command in ['/add_chat_to_company']):
             return await handler(event, data)
         
-        if (event.text and event.text in self.bot_commands and user_is_exists(user_id=self.user_id) and
+        if (text_to_check and text_to_check in self.bot_commands and user_is_exists(user_id=self.user_id) and
                 is_group_chat_in_company(chat_id=self.chat_id)):
             ic('/command в чате с компанией')
             return await handler(event, data)
         
-        if event.text and event.text in self.bot_commands and not is_group_chat_in_company(chat_id=self.chat_id):
+        if text_to_check and text_to_check in self.bot_commands and not is_group_chat_in_company(chat_id=self.chat_id):
             ic('/command в чате без компании')
             await self.send_group_registration_message(event)
             return
 
-        if event.text and 'ctrl' in event.text.lower():
+        if text_to_check and 'ctrl' in text_to_check.lower():
             ic('ctrl')
             return await handler(event, data)
 
-        text_to_check = event.text or event.caption
+        
         ic(text_to_check)
         if text_to_check:
             if not any(word.lower() in text_to_check.lower() for word in ['ягодка', 'джарвел']):
@@ -93,16 +94,6 @@ class CheckRegistrationMiddleware(BaseMiddleware):
                 ic('ягодка но пользователь зареган')
                 ic(data)
                 return await handler(event, data)
-            
-
-        # if event.text is not None:
-        #     if not any(word.lower() in event.text.lower() for word in ['ягодка', 'джарвел']):
-        #         ic('не ягодка')
-        #         return await handler(event, data)
-
-        #     if isinstance(event, Message) and any(word in event.text.lower() for word in ['ягодка', 'джарвел']) and user_is_exists(user_id=self.user_id):
-        #         ic('ягодка но пользователь зареган')
-        #         return await handler(event, data)
 
         if user_is_exists(user_id=self.user_id):
             ic("пользователь зареган")
@@ -169,6 +160,6 @@ class CheckRegistrationMiddleware(BaseMiddleware):
         message_text = ("Для использования данной функции вам необходимо зарегистрировать данный чат в компании\n"
                         "Используйте команду /add_chat_to_company <Код компании>\n\n"
                         "Вставьте вместо <Код компании> код (без угловых скобок), который вы получили при создании компании")
-        file_id = "BAACAgIAAx0CfWptYgACD49mubXzBJYvy--fI-dDHLz2jJKdQAACGlIAAjN4qUn10QJwUFS42jUE"
+        file_id = "BAACAgIAAx0CfWptYgACD41mubXFrUKXkciPQKVkFtJyutupwgACD1IAAjN4qUmXcbLKm-gv7zUE"
         if isinstance(event, Message):
             await event.answer(message_text)
