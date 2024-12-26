@@ -4,6 +4,7 @@ from application.messages.usecases.send_ctrl_message_usecase import SendCtrlUseC
 from domain.entities.job import Job
 from domain.entities.ctrl_message import CtrlMessage
 from typing import List
+from icecream import ic
 
 class CtrlJobService:
     def __init__(self, repositories: RepositoriesDependencyProvider, scheduler_service: SchedulerService, send_ctrl_usecase: SendCtrlUseCase):
@@ -27,5 +28,6 @@ class CtrlJobService:
         ctrls = await self.ctrls_repository.get_all()
         job_list = []
         for ctrl in ctrls:
+            ic(ctrl)
             job_list.append(Job(func=self.send_ctrl_usecase.execute, trigger="date", run_date=ctrl.run_date, args=[ctrl]))
         return job_list
