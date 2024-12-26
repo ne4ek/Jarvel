@@ -1,6 +1,7 @@
 from aiogram import Bot
 from domain.entities.ctrl_message import CtrlMessage
 from random import choice
+from icecream import ic
 
 class SendCtrlUseCase:
     def __init__(self, bot: Bot):

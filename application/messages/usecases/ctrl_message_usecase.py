@@ -13,12 +13,6 @@ class CtrlMessageUseCase:
 
     async def execute(self, text: str, message_id: int, chat_id: int, bot_username: str, sender_username: str):
         w, d, h, m = 0, 0, 0, 0
-        # for line in text.split("\n"):
-        #     if bot_username in line and "ctrl" in line.lower():
-        #         text = line
-        #         break
-        # else:
-        #     return
         _mentioned_users = re.findall(r"@\w+", text)
         mentioned_users = []
         for user in _mentioned_users:

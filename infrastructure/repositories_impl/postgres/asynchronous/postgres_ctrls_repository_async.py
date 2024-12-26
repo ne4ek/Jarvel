@@ -1,6 +1,7 @@
 from application.repositories.ctrls_repository import CtrlsRepository
 from domain.entities.ctrl_message import CtrlMessage
 from infrastructure.repositories_impl.postgres.asynchronous.postgres_connection_async import open_and_close_connection
+from icecream import ic
 
 
 class PostgresCtrlsRepositoryAsync(CtrlsRepository):
@@ -28,9 +29,12 @@ class PostgresCtrlsRepositoryAsync(CtrlsRepository):
         result = await connection.fetch(query)
         rows = []
         for row in result:
-            row_list = [row.get("chat_id"), row.get("run_date"), row.get("ctrl_usernames"), row.get("reply_message_id"), row.get("fyi_usernames")]
-            rows.append(CtrlMessage(*row_list))
-        print(rows)
+            rows.append(CtrlMessage(chat_id = row.get("chat_id"),
+                                    run_date = row.get("run_date"),
+                                    ctrl_usernames = row.get("ctrl_usernames"),
+                                    reply_message_id = row.get("reply_message_id"),
+                                    fyi_usernames = row.get("fyi_usernames"),
+                                    ))
         return rows
 
             
