@@ -41,8 +41,6 @@ class JoinCompanyHandlers:
         """
 
         await state.set_state(JoinCompany.company_code)
-        # company = Company()
-        # await state.update_data(company=company)
 
         message = await callback.message.edit_text(text=company_msg.join_company_request_company_code,
                                                    reply_markup=user_chat_keyboards.menu_join_company_get_company_code())

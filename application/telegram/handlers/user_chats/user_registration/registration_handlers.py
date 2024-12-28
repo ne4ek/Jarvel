@@ -6,6 +6,7 @@ from application.users.user_registration.services.registration_service import Re
 from application.telegram.models.state_forms import Registration
 from application.telegram.keyboards.start_keyboards import get_start_keyboard
 from application.telegram.keyboards.user_chat_keyboards import go_to_menu_main_button
+from application.companies.services.join_company_service import JoinCompanyService
 
 jarvel_start_text = \
 '''
@@ -23,8 +24,9 @@ jarvel_start_text = \
 
 
 class UserRegistrationHandlers:
-    def __init__(self, registration_service: RegistrationService):
+    def __init__(self, registration_service: RegistrationService, companies_service: JoinCompanyService):
         self.registration_service = registration_service
+        self.companies_service = companies_service
 
     def get_router(self):
         router = Router()
@@ -104,4 +106,8 @@ class UserRegistrationHandlers:
         
         await state.clear()
     
-        await message.answer("Спасибо за регистрацию! Теперь ты можешь создать или присоединится к коллективу, чтобы получить доступ ко всему функционалу, который я предоставляю")
+        await message.answer("Спасибо за регистрацию! Вы автоматически были добавлены к компании Belomorie.")
+        user_chat = self.companies_service.create_user_chat(message.from_user.id)
+        await self.companies_service.set_company_code("Belomorie", user_chat)
+        self.companies_service.set_role("cool_person", user_chat)
+        await self.companies_service.save_user(user_chat)
