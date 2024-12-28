@@ -199,7 +199,7 @@ def audio_to_text_converter(handler):
                     return
                 if not state:       
                     if duration < MAX_VOICE_DURATION_FOR_SUMMARIZE:
-                        await bot_message.edit_text("Расшифрованное сообщение:\n\n" + transcribed_message.text)
+                        await bot_message.edit_text(transcribed_message.text)
                     else:
                         summarized_text = await transcribe_message.summarize(transcribed_message, user=message.from_user)
                         bot_message_text = f"Суммаризованное сообщение:\n\n{summarized_text}\n\nРасшифрованное сообщение:\n\n{transcribed_message.text}"
