@@ -17,11 +17,30 @@ class ProcessMessageHandlers:
         return router
 
     def register_handlers(self, router: Router):
-        router.message(F.chat.type != "private", F.text.lower().contains("ctrl"))(self.ctrl_message_handler)
-        router.message(F.chat.type != "private", F.text.lower().contains("ап"))(self.up_message_handler)
-        router.message(F.chat.type != "private", F.text.lower().contains("выполнил"))(self.up_ready_handler)
+        router.message(F.chat.type != "private", F.func(self.contains_ctrl_in_words))(self.ctrl_message_handler)
+        router.message(F.chat.type != "private", F.func(self.contains_up_in_words))(self.up_message_handler)
+        router.message(F.chat.type != "private", F.func(self.contains_vipolnil_in_words))(self.up_ready_handler)
         router.message(F.chat.type != "private")(self.message_handler)
 
+    def contains_up_in_words(self, message: types.Message) -> bool:
+        if not message.text:
+            return False
+        words = message.text.lower().split()
+        return "ап" in words
+    
+    def contains_ctrl_in_words(self, message: types.Message) -> bool:
+        if not message.text:
+            return False
+        words = message.text.lower().split()
+        return "ctrl" in words
+    
+    def contains_vipolnil_in_words(self, message: types.Message) -> bool:
+        if not message.text:
+            return False
+        words = message.text.lower().split()
+        return "выполнил" in words
+    
+    
     async def ctrl_message_handler(self, message: types.Message):
         ic("ctrl_message_handler")
         if message.forward_from:

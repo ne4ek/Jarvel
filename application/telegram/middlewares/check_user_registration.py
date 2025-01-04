@@ -84,7 +84,7 @@ class CheckRegistrationMiddleware(BaseMiddleware):
             ic('ctrl')
             return await handler(event, data)
         
-        if text_to_check and 'ап' in text_to_check.lower() or text_to_check.lower() in ["выполнил",]:
+        if text_to_check and 'ап' in text_to_check.lower().split() or 'выполнил' in text_to_check.lower().split():
             ic('ап')
             return await handler(event, data)           
         
