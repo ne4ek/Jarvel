@@ -123,3 +123,19 @@ CREATE TABLE public.user_company (
     role text,
     rights text
 );
+
+
+CREATE TABLE public.ups (
+    up_id SERIAL PRIMARY KEY,
+    chat_id BIGINT NOT NULL,
+    start_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    present_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    next_up_date TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+    interval INTERVAL NOT NULL,
+    starting_interval INTERVAL NOT NULL,
+    up_usernames VARCHAR(255) NOT NULL,
+    reply_message_id INT NOT NULL,
+    fyi_usernames TEXT NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT true
+);
+

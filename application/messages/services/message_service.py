@@ -27,6 +27,13 @@ class TelegramMessageService:
     async def process_ctrl(self, message_id: int, chat_id: int, text: str, bot_username: str, sender_username: str):
         return await self.usecases.ctrl_message_usecase.execute(text, message_id, chat_id, bot_username, sender_username)
     
+    async def process_up(self, message: Message):
+        return await self.usecases.up_message_usecase.execute(message)
+    
+    async def process_ready_up(self, message: Message):
+        ic("process_ready_up")
+        return await self.usecases.up_message_usecase.execute_ready_up(message)
+
     def is_bot_mentioned(self, text):
         return self.usecases.is_bot_mentioned.execute(text)
 

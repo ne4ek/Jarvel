@@ -18,10 +18,12 @@ class ProcessMessageHandlers:
 
     def register_handlers(self, router: Router):
         router.message(F.chat.type != "private", F.text.lower().contains("ctrl"))(self.ctrl_message_handler)
+        router.message(F.chat.type != "private", F.text.lower().contains("ап"))(self.up_message_handler)
+        router.message(F.chat.type != "private", F.text.lower().contains("выполнил"))(self.up_ready_handler)
         router.message(F.chat.type != "private")(self.message_handler)
 
     async def ctrl_message_handler(self, message: types.Message):
-        ic("ctrl_message_handler", message)
+        ic("ctrl_message_handler")
         if message.forward_from:
             return
         text = message.text
@@ -63,5 +65,18 @@ class ProcessMessageHandlers:
             except Exception as e:
                 await bot_message.edit_text(text="Ошибка обработки сообщения")
                 ic(str(e))
+
+    async def up_message_handler(self, message: types.Message):
+        ic("up_message_handler")
+        up_result = await self.message_service.process_up(message)
+        if up_result:
+            await message.reply(up_result)
+        
+    async def up_ready_handler(self, message: types.Message):
+        ic("up_ready_handler")
+        up_ready_result = await self.message_service.process_ready_up(message)
+        ic(up_ready_result)
+        if up_ready_result:
+            await message.reply(up_ready_result)
 
                 

@@ -28,6 +28,5 @@ class CtrlJobService:
         ctrls = await self.ctrls_repository.get_all()
         job_list = []
         for ctrl in ctrls:
-            ic(ctrl)
             job_list.append(Job(func=self.send_ctrl_usecase.execute, trigger="date", run_date=ctrl.run_date, args=[ctrl]))
         return job_list

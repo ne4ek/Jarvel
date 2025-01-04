@@ -9,6 +9,8 @@ from application.repositories.messages_repository import MessagesRepository
 from application.repositories.tasks_repository import TasksRepository
 from application.repositories.users_repository import UsersRepository
 from application.repositories.ctrls_repository import CtrlsRepository
+from application.repositories.up_repository import UpRepository
+
 from application.repositories.arbitrary_user_data_repository import ArbitraryUserDataRepository
 
 
@@ -52,4 +54,8 @@ class RepositoriesDependencyProvider(ABC):
     
     @abstractmethod
     def get_ctrls_repository(self) -> CtrlsRepository:
+        pass
+
+    @abstractmethod
+    def get_ups_repository(self) -> UpRepository:
         pass

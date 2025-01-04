@@ -5,6 +5,7 @@ from aiogram.exceptions import TelegramMigrateToChat, TelegramNetworkError
 from aiogram.types import BotCommand
 from db.postgresql_handlers.group_chat_db_handler import is_group_chat_in_company
 from db.postgresql_handlers.users_db_handler import user_is_exists
+from db.postgresql_handlers.up_db_handler import user_is_uped_in_this_chat
 from icecream import ic
 import logging
 
@@ -82,7 +83,10 @@ class CheckRegistrationMiddleware(BaseMiddleware):
         if text_to_check and 'ctrl' in text_to_check.lower():
             ic('ctrl')
             return await handler(event, data)
-
+        
+        if text_to_check and 'ап' in text_to_check.lower() or text_to_check.lower() in ["выполнил",]:
+            ic('ап')
+            return await handler(event, data)           
         
         ic(text_to_check)
         if text_to_check:
