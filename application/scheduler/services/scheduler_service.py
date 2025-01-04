@@ -17,7 +17,7 @@ class SchedulerService:
         ic(job_id)
         func = job.func
         args = job.args
-        if job_id and job_id != "None`":
+        if job_id and job_id != "None":
             self.scheduler.add_job(func, trigger="date", run_date=job_time, id=job_id, args=args)
         else:
             self.scheduler.add_job(func, trigger="date", run_date=job_time, args=args)
