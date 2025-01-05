@@ -2,7 +2,7 @@ import torch
 import os
 from aiogram import types, Bot
 from aiogram.exceptions import TelegramBadRequest
-from const import DIRNAME, VOICE_WORDS, MAX_MESSAGE_LENGTH, MAX_VOICE_DURATION, MAX_VOICE_DURATION_FOR_SUMMARIZE
+from const import DIRNAME, VOICE_WORDS, MAX_MESSAGE_LENGTH, MAX_VOICE_DURATION, MIN_MESSAGE_LENGTH_FOR_SUMMARIZE
 from ai.summarization_prompts import summarization_prompt
 from infrastructure.config.bot_config import bot
 from audio_extract import extract_audio
@@ -198,7 +198,7 @@ def audio_to_text_converter(handler):
                     ic(str(e))
                     return
                 if not state:       
-                    if duration < MAX_VOICE_DURATION_FOR_SUMMARIZE:
+                    if len(transcribed_message.text) < MIN_MESSAGE_LENGTH_FOR_SUMMARIZE:
                         await bot_message.edit_text(transcribed_message.text)
                     else:
                         summarized_text = await transcribe_message.summarize(transcribed_message, user=message.from_user)
