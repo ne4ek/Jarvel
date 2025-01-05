@@ -182,3 +182,6 @@ message: {text}
     async def save_message(self, message: Union[TranscribedMessage, types.Message]):
         message_entity = await self.__get_message_entity(message)
         await self.message_repository.save(message_entity)
+        
+    async def shorten_text(self, text_for_shorting):
+        return await self.distributor.shorten_message(text_for_shorting)
