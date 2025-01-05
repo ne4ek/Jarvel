@@ -20,7 +20,9 @@ class CtrlMessageUseCase:
                 mentioned_users.append(user)
 
         ctrl_text = re.search(r"ctrl (.*)", text.lower())
+        ic(ctrl_text)
         ctrl_text = ctrl_text.group(1) if ctrl_text else "24"
+        ic(ctrl_text)
         if ctrl_text != "24":
             # find number associated with "w" (weeks)
             w = re.findall(r"(\d+)w", ctrl_text)

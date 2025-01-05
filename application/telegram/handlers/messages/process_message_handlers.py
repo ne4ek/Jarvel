@@ -6,6 +6,7 @@ from application.messages.services.message_service import TelegramMessageService
 from application.messages.message_transcriber import audio_to_text_converter
 from icecream import ic
 from aiogram.exceptions import TelegramBadRequest
+import re
 
 class ProcessMessageHandlers:
     def __init__(self, message_service: TelegramMessageService):
@@ -23,10 +24,10 @@ class ProcessMessageHandlers:
         router.message(F.chat.type != "private")(self.message_handler)
 
     def contains_up_in_words(self, message: types.Message) -> bool:
+        pattern = re.compile(r'\bап\b.*(?:@\w+)+', re.IGNORECASE)
         if not message.text:
             return False
-        words = message.text.lower().split()
-        return "ап" in words
+        return  bool(pattern.search(message.text))
     
     def contains_ctrl_in_words(self, message: types.Message) -> bool:
         if not message.text:

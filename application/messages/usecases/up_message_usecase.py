@@ -14,17 +14,17 @@ class UpMessageUseCase:
         self.up_repository = repositories_provider.get_ups_repository()
 
     async def execute(self, message: Message):
-        text: str = message.text
+        w, d, h, m = 0, 0, 0, 0
+        text: str = message.text.strip()
+        _up_usernames = re.findall(r"@\w+", text)
 
-        match = re.search(r"(?i)ап ((?:@\w+\s*)+) (\d+[wdhms])?", text)
-        if not match:
-            return "Неверный формат команды. Используйте: ап @nickname 1h (или другой временной интервал)."
+        up_text = re.search(r"ап (.*)", text.lower())
+        up_text = up_text.group(1) if up_text else "24"
 
-        up_usernames = match.group(1)
-        time_text = match.group(2)
-
-        up_usernames = up_usernames.replace("@", "").split()
-
+        up_usernames = []
+        for up_username in _up_usernames:
+            up_usernames.append(up_username.replace("@", ""))
+        
         bot_user = await message.bot.get_me()
         bot_name = bot_user.username
         
@@ -34,24 +34,28 @@ class UpMessageUseCase:
         if not up_usernames:
             return
 
-        w = int(re.findall(r"(\d+)w", time_text)[0]) if "w" in time_text else 0
-        d = int(re.findall(r"(\d+)d", time_text)[0]) if "d" in time_text else 0
-        h = int(re.findall(r"(\d+)h", time_text)[0]) if "h" in time_text else 0
-        m = int(re.findall(r"(\d+)m", time_text)[0]) if "m" in time_text else 0
-        s = int(re.findall(r"(\d+)s", time_text)[0]) if "s" in time_text else 0
+        if up_text != "24":
+            w = re.findall(r"(\d+)w", up_text)
+            w = int(w[0]) if w else 0
+            d = re.findall(r"(\d+)d", up_text)
+            d = int(d[0]) if d else 0
+            h = re.findall(r"(\d+)h", up_text)
+            h = int(h[0]) if h else 0
+            m = re.findall(r"(\d+)m", up_text)
+            m = int(m[0]) if m else 0
+        if not any([w, d, h, m]):
+            h = re.findall(r"\d+", up_text)
+            h = int(h[0]) if h else 24
 
-        if s > 59:
-            m += s // 60
-            s = s % 60
         if m > 59:
             h += m // 60
             m = m % 60
         if h > 23:
             d += h // 24
             h %= 24
-
+            
         start_date = datetime.now(tz=pytz.timezone("Europe/Moscow"))
-        interval = timedelta(weeks=w, days=d, hours=h, minutes=m, seconds=s)
+        interval = timedelta(weeks=w, days=d, hours=h, minutes=m)
         next_up_date = start_date + interval
 
         
@@ -87,6 +91,5 @@ class UpMessageUseCase:
             return 
         await up_repository.deactivate_up(up_message_from_db.up_message_id)
         self.up_job_service.remove_job_by_id(up_message_from_db.up_message_id)
-        text = f"@{up_message_from_db.fyi_usernames} выполнил @{up_message_from_db.up_usernames} задачу"
-        ic(text)
+        text = f"@{up_message_from_db.up_usernames} выполнил задачу\n\n@{up_message_from_db.fyi_usernames} FYI"
         return text
