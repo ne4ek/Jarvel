@@ -15,14 +15,15 @@ class SendUpUseCase:
         
     async def execute(self, up_message: UpMessage):       
         if self.__interval_is_less_week(up_message=up_message):
-            text = f"АП @{up_message.up_usernames}"
+            text = f"АП @{up_message.up_username}"
             await self.__reload_job_double_interval(up_message=up_message)
         else:
             phrases = ["Какой статус?", "Какой статус у задачи?", "Как дела с этим?", "Как дела?"]
-            text = f"@{up_message.up_usernames}\n\n{choice(phrases)}"
+            text = f"@{up_message.up_username}\n\n{choice(phrases)}"
             await self.__reload_job_from_start(up_message=up_message)
         await self.bot.send_message(chat_id=up_message.chat_id,
-                                        text=text)
+                                    reply_to_message_id=up_message.bot_message_id,
+                                    text=text)
     def __interval_is_less_week(self, up_message: UpMessage) -> bool:
         difference = abs(up_message.next_up_date - up_message.present_date)
         return difference < timedelta(weeks=1)
