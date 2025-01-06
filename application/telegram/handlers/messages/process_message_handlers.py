@@ -67,15 +67,15 @@ class ProcessMessageHandlers:
         message_text = message.text or message.caption
         if message_text:
             await self.message_service.save_message(message)
-            if message.reply_to_message and message.reply_to_message.from_user.id == message.bot.id:
-                return 
+            # if message.reply_to_message and message.reply_to_message.from_user.id == message.bot.id:
+            #     return 
             if not self.message_service.is_bot_mentioned(message_text):
-                if len(message_text) > MIN_MESSAGE_LENGTH_FOR_SHORTENING:  
-                        bot_message = await message.reply(text="Сокращаю...")
-                        shorten_message = await self.message_service.shorten_text(message_text)
-                        ic(shorten_message)
-                        await bot_message.edit_text(shorten_message)
-                        return
+                # if len(message_text) > MIN_MESSAGE_LENGTH_FOR_SHORTENING:  
+                #         bot_message = await message.reply(text="Сокращаю...")
+                #         shorten_message = await self.message_service.shorten_text(message_text)
+                #         ic(shorten_message)
+                #         await bot_message.edit_text(shorten_message)
+                #         return
                 return
                 
             bot_message = await message.reply(text="Обрабатываю запрос...")

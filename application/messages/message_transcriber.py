@@ -202,9 +202,9 @@ def audio_to_text_converter(handler):
                         await bot_message.edit_text(transcribed_message.text)
                     else:
                         summarized_text = await transcribe_message.summarize(transcribed_message, user=message.from_user)
-                        bot_message_text = f"Суммаризованное сообщение:\n\n{summarized_text}\n\nРасшифрованное сообщение:\n\n{transcribed_message.text}"
+                        bot_message_text = f"{summarized_text}\n\n==Исходное сообщение==\n{transcribed_message.text}"
                         if len(bot_message_text) < MAX_MESSAGE_LENGTH:
-                            await bot_message.edit_text(bot_message_text)
+                            await bot_message.edit_text(bot_message_text, parse_mode = "HTML")
                         else:
                             await bot_message.delete()
                             bot_messages_text = (bot_message_text[i:i + MAX_MESSAGE_LENGTH] for i in range(0, len(bot_message_text), MAX_MESSAGE_LENGTH))
