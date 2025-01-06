@@ -133,9 +133,10 @@ CREATE TABLE public.ups (
     next_up_date TIMESTAMP WITH TIME ZONE DEFAULT NULL,
     interval INTERVAL NOT NULL,
     starting_interval INTERVAL NOT NULL,
-    up_usernames VARCHAR(255) NOT NULL,
+    up_username VARCHAR(255) NOT NULL,
     reply_message_id INT NOT NULL,
-    fyi_usernames TEXT NOT NULL,
+    bot_message_id INT DEFAULT NULL,
+    fyi_username TEXT NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT true
 );
 
