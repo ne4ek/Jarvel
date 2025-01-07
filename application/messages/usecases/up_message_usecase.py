@@ -64,24 +64,27 @@ class UpMessageUseCase:
                                interval=interval,
                                starting_interval=interval,
                                reply_message_id=message.message_id,
-                               fyi_usernames=message.from_user.username,
+                               fyi_username=message.from_user.username,
                                chat_id=message.chat.id,
                                present_date=start_date,       
                                )
 
         for up_username in up_usernames:
             if not await self.up_repository.get_up_by_username_and_chat_id(username=up_username, chat_id=message.chat.id):         
-                await self.__save_up_message(up_message, up_username) 
-                await message.reply(f"@{up_username} поставлен на апание.")
+                up_id = await self.__save_up_message(up_message, up_username) 
+                bot_message = await message.reply(f"@{up_username} поставлен на апание.")
+                up_message.bot_message_id = bot_message.message_id
+                await self.up_repository.add_bot_id_by_up_id(bot_message_id=bot_message.message_id, up_id=up_id)
             else:
                 await message.reply(f"@{up_username} уже апаеться.")
     
     
     async def __save_up_message(self, up_message: UpMessage, up_username):
-        up_message.up_usernames = up_username
+        up_message.up_username = up_username
         up_id = await self.up_repository.save(up_message=up_message)
         up_message.up_message_id = up_id
         self.up_job_service.add_saved_up_job(up_message)
+        return up_id
         
         
     async def execute_ready_up(self, message: Message):
@@ -91,5 +94,5 @@ class UpMessageUseCase:
             return 
         await up_repository.deactivate_up(up_message_from_db.up_message_id)
         self.up_job_service.remove_job_by_id(up_message_from_db.up_message_id)
-        text = f"@{up_message_from_db.up_usernames} выполнил задачу\n\n@{up_message_from_db.fyi_usernames} FYI"
+        text = f"@{up_message_from_db.up_username} выполнил задачу\n\n@{up_message_from_db.fyi_username} FYI"
         return text
