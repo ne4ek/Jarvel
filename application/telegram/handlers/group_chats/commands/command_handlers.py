@@ -10,7 +10,7 @@ from application.telegram.keyboards import group_chat_keyboards
 router_commands = Router()
 tag = "group_chats_command"
 
-#now is not work (see ../command_handlers.py)
+#now it do not work (see ../command_handlers.py)
 @router_commands.message(Command("add_chat_to_company"), F.chat.type != "private")
 async def add_chat_to_company_command(message: Message, command: CommandObject, state: FSMContext):
     chat_id = message.chat.id

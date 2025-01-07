@@ -77,7 +77,6 @@ class TelegramMessageService:
                                                             company_code=company_code)
             await state.update_data({str(job_entity.__class__.__name__).lower(): {"entity": job_entity, "message": bot_message}})
             message_to_send = assistant.compose_telegram_filling_message(job_entity)
-        message_to_send["message"] = self.__convert_to_html(message_to_send["message"])
         return message_to_send
 
     async def summarize_text(self, text):
@@ -138,6 +137,7 @@ message: {text}
         messages_for_assistant.reverse()
         return messages_for_assistant
 
+#do not use this function 
     def __convert_to_html(self, text: str):
         if not text:
             return
@@ -182,3 +182,6 @@ message: {text}
     async def save_message(self, message: Union[TranscribedMessage, types.Message]):
         message_entity = await self.__get_message_entity(message)
         await self.message_repository.save(message_entity)
+        
+    async def shorten_text(self, text_for_shorting):
+        return await self.distributor.shorten_message(text_for_shorting)

@@ -34,3 +34,14 @@ class Distributor:
         if assistant_to_call == "no_assistant" or assistant_to_call is None:
             assistant_to_call = "talker"
         return self._available_assistants[assistant_to_call]
+    
+    async def shorten_message(self, text_for_shorting: str) -> str:
+        promt_for_shorting = "Проанализировать текст. Сформулировать краткую суть (1-2 предложения)."
+        context = [{"role": "system", "content": promt_for_shorting},
+                       {"role": "user", "content": text_for_shorting}]
+        response = await self.client.chat.completions.create(
+            messages=context,
+            model=self.model,
+            temperature=self.temperature,
+        )
+        return response.choices[0].message.content
