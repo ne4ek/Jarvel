@@ -70,7 +70,7 @@ class ProcessMessageHandlers:
                 return
             bot_message = await message.reply(text="Обрабатываю запрос...")
             response: dict = await self.message_service.call_assistant(bot_message, message, state)
-            # ic(response)
+            ic(response)
             try:
                 if response:
                     parse_mode = response.get("parse_mode") if "parse_mode" in response.keys() else ParseMode.HTML
