@@ -225,7 +225,7 @@ def audio_to_text_converter(handler):
             
             
             
-async def check_existing_transcribation(message):
+async def check_existing_transcription(message):
     chat_id = message.chat.id
     message_id = message.message_id
     ic(chat_id, message_id)
