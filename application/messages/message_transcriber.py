@@ -18,9 +18,9 @@ import asyncio
 import ffmpeg
 
 class TranscribeTelegramMessage:
-    def __init__(self, torch_model, api_key: str, trancriber_model: str, bot: Bot, words_for_transcriber: str, gpt_model: str, gpt_temperature: int, summarizer_prompt: str, repositories: RepositoriesDependencyProvider):
+    def __init__(self, torch_model, api_key: str, transcriber_model: str, bot: Bot, words_for_transcriber: str, gpt_model: str, gpt_temperature: int, summarizer_prompt: str, repositories: RepositoriesDependencyProvider):
         self.client = AsyncOpenAI(api_key=api_key)
-        self.trancriber_model = trancriber_model
+        self.transcriber_model = transcriber_model
         self.bot = bot
         self.torch_model = torch_model
         self.words_for_transcriber = words_for_transcriber
@@ -47,7 +47,7 @@ class TranscribeTelegramMessage:
         saved_file = open(fp_disk_voice_only, "rb")
         
         transcription = await self.client.audio.transcriptions.create(
-            model=self.trancriber_model,
+            model=self.transcriber_model,
             file=saved_file,
             response_format="text",
             prompt=self.words_for_transcriber
@@ -155,7 +155,7 @@ model = torch.hub.load(repo_or_dir='snakers4/silero-vad',
 
 transcribe_message = TranscribeTelegramMessage(torch_model=model,
                                                api_key=os.getenv("GPT_API_KEY"),
-                                               trancriber_model="whisper-1",
+                                               transcriber_model="whisper-1",
                                                bot=bot,
                                                words_for_transcriber=VOICE_WORDS,
                                                gpt_model="gpt-4o-mini",
@@ -166,6 +166,7 @@ transcribe_message = TranscribeTelegramMessage(torch_model=model,
 def audio_to_text_converter(handler):
     @wraps(handler)
     async def wrapper(self, message: types.Message, *args, **kwargs):
+        await check_existing_transcribation(message)
         is_voice = isinstance(message.voice, types.Voice)
         is_video_note = isinstance(message.video_note, types.VideoNote)
         is_video_document = isinstance(message.document, types.Document) and message.document.mime_type in ["video/webm", "video/mp4"] 
@@ -222,3 +223,12 @@ def audio_to_text_converter(handler):
             await handler(self, message, *args, **kwargs)
     return wrapper
             
+            
+            
+async def check_existing_transcribation(message):
+    chat_id = message.chat.id
+    message_id = message.message_id
+    ic(chat_id, message_id)
+    bot = message.bot
+    next_message = await bot.copy_messages(from_chat_id=chat_id, message_ids=[message_id+1], chat_id=chat_id)
+    ic(next_message)
