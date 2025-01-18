@@ -1,0 +1,8 @@
+version: "2.28"
+
+services:
+  bot:
+    build: .
+    env_file: .env
+    ports:
+      - "${BOT_PORT}:${BOT_PORT}"

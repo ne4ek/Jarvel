@@ -1,13 +1,6 @@
 version: "2.28"
 
 services:
-  bot:
-    build: .
-    env_file: .env
-    depends_on:
-      - postgres_db
-    ports:
-      - "${BOT_PORT}:${BOT_PORT}"
   postgres_db:
     image: postgres:latest
     container_name: postgres_db
@@ -23,5 +16,11 @@ services:
       - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    networks:
+      - shared_net
+
 volumes:
   pgdata:
+
+networks:
+  shared_net:
