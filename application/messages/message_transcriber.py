@@ -44,19 +44,15 @@ class TranscribeTelegramMessage:
         id = callback.data.split()[-1]
         shorted_text = callback.message.text.split("\n\n")[:2]
         bot_response_message = await self.__get_source_bot_full_message(shorted_text, id)
-        ic(bot_response_message)
         await callback.message.edit_text(text=bot_response_message["text"], reply_markup = bot_response_message["keyboard"], parse_mode="HTML")
         
     async def short_transcribed_callback(self, callback: types.CallbackQuery):
         id = callback.data.split()[-1]
         text_list = callback.message.text.split("\n\n")
-        ic(text_list)
         short_text = text_list[:2]
         source_text = text_list[-1].replace(TITLE_FOR_SOURCE_TRANSCRIBED_TEXT, "").strip()
-        ic(source_text)
         truncated_text = self.__truncate_to_words(source_text)
         bot_response_message = self.__get_short_bot_full_message(short_text, truncated_text, id)
-        ic(bot_response_message)
         await callback.message.edit_text(text=bot_response_message["text"], reply_markup = bot_response_message["keyboard"], parse_mode="HTML") 
         
     async def execute(self, message: types.Message):
@@ -210,8 +206,7 @@ class TranscribeTelegramMessage:
                                                  from_user=original_message.from_user,
                                                  reply_to_message=original_message.reply_to_message,
                                                  summarized_text=None,
-                                                 original_message=original_message,
-                                                 scheduler_service=scheduler_service)
+                                                 original_message=original_message,)
         return transcribed_message
     
 model = torch.hub.load(repo_or_dir='snakers4/silero-vad',
@@ -269,20 +264,8 @@ def audio_to_text_converter(handler):
                     if len(transcribed_message.text) < MIN_MESSAGE_LENGTH_FOR_SUMMARIZE:
                         await bot_message.edit_text(transcribed_message.text)
                     else:
-                        # summarized_text = await transcribe_message.summarize(transcribed_message, user=message.from_user)
-                        # truncated_source_text = truncate_to_words(transcribed_message, MAX_SOURCE_TRANSCRIBED_TEXT_LENGTH)
-                        # bot_message_text = f"{summarized_text}\n\n{TITLE_FOR_SOURCE_TRANSCRIBED_TEXT}\n{transcribed_message.text}"
                         bot_responce_message = await transcribe_message.get_bot_response_message(message, transcribed_message.text)
-                        # await bot_message.delete()
-                        ic(bot_responce_message)
                         await bot_message.edit_text(text = bot_responce_message["text"], reply_markup = bot_responce_message["keyboard"], parse_mode="HTML")
-                        # if len(bot_message_text) < MAX_MESSAGE_LENGTH:
-                        #     await bot_message.edit_text(bot_message_text, parse_mode = "HTML")
-                        # else:
-                        #     await bot_message.delete()
-                        #     bot_messages_text = (bot_message_text[i:i + MAX_MESSAGE_LENGTH] for i in range(0, len(bot_message_text), MAX_MESSAGE_LENGTH))
-                        #     for bot_message_text_splited in bot_messages_text:
-                        #         await message.reply(bot_message_text_splited)
                 await handler(self, transcribed_message, *args, **kwargs)
             except Exception as e:
                 try:
