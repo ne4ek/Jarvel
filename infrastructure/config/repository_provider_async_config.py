@@ -13,6 +13,7 @@ mailing_repository= PostgresMailingRepositoryAsync(connection_pool)
 arbitrary_data_repository= PostgresArbitraryUserDataRepositoryAsync(connection_pool)
 ctrls_repository= PostgresCtrlsRepositoryAsync(connection_pool)
 up_repository = PostgresUpRepositoryAsync(connection_pool)
+transcribed_voice_message_text_repository = PostgresTranscribedVoiceMessageTextAsync(connection_pool)
 
 repositroties_dependency_provider_async = RepositoriesDependencyProviderImplAsync(users_repository=users_repository,
 companies_repository=companies_repository,
@@ -25,4 +26,5 @@ mailing_repository=mailing_repository,
 arbitrary_data_repository=arbitrary_data_repository,
 ctrls_repository=ctrls_repository,
 ups_repository=up_repository,
+transcribed_voice_message_text_repository=transcribed_voice_message_text_repository,
 )
