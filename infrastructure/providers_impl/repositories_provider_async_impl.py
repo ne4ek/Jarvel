@@ -10,6 +10,7 @@ from infrastructure.repositories_impl.postgres.asynchronous.postgres_ctrls_repos
 from infrastructure.repositories_impl.postgres.asynchronous.postgres_mailing_repository_async import PostgresMailingRepositoryAsync
 from infrastructure.repositories_impl.postgres.asynchronous.postgres_arbitrary_user_data_repository_async import PostgresArbitraryUserDataRepositoryAsync
 from infrastructure.repositories_impl.postgres.asynchronous.postgres_ups_repository_async import PostgresUpRepositoryAsync
+from infrastructure.repositories_impl.postgres.asynchronous.postgres_transcribed_voice_message_text_async import PostgresTranscribedVoiceMessageTextAsync
 
 class RepositoriesDependencyProviderImplAsync:
     def __init__(self,
@@ -24,6 +25,7 @@ class RepositoriesDependencyProviderImplAsync:
                  arbitrary_data_repository: PostgresArbitraryUserDataRepositoryAsync,
                  ctrls_repository: PostgresCtrlsRepositoryAsync,
                  ups_repository: PostgresUpRepositoryAsync,
+                 transcribed_voice_message_text_repository: PostgresTranscribedVoiceMessageTextAsync,
                  ):
         self.users_repository = users_repository
         self.companies_repository = companies_repository
@@ -36,6 +38,7 @@ class RepositoriesDependencyProviderImplAsync:
         self.arbitrary_data_repository = arbitrary_data_repository
         self.ctrls_repository = ctrls_repository
         self.ups_repository = ups_repository
+        self.transcribed_voice_message_text_repository = transcribed_voice_message_text_repository
 
     def get_users_repository(self):
         return self.users_repository
@@ -69,3 +72,6 @@ class RepositoriesDependencyProviderImplAsync:
 
     def get_ups_repository(self) -> PostgresUpRepositoryAsync:
         return self.ups_repository
+    
+    def get_transcribed_voice_message_text_repository(self) -> PostgresTranscribedVoiceMessageTextAsync:
+        return self.transcribed_voice_message_text_repository

@@ -1,4 +1,4 @@
-CREATE TABLE public.company (
+CREATE TABLE IF NOT EXISTS public.company (
     company_id SERIAL PRIMARY KEY,
     name text NOT NULL,
     company_code text NOT NULL,
@@ -7,7 +7,7 @@ CREATE TABLE public.company (
 );
 
 
-CREATE TABLE public.ctrls (
+CREATE TABLE IF NOT EXISTS public.ctrls (
     chat_id bigint NOT NULL,
     run_date timestamp with time zone NOT NULL,
     ctrl_usernames text NOT NULL,
@@ -16,14 +16,14 @@ CREATE TABLE public.ctrls (
 );
 
 
-CREATE TABLE public.group_chat (
+CREATE TABLE IF NOT EXISTS public.group_chat (
     group_chat_id bigint NOT NULL,
     name text NOT NULL,
     company_id smallint NOT NULL
 );
 
 
-CREATE TABLE public.mail (
+CREATE TABLE IF NOT EXISTS public.mail (
     mail_id bigint NOT NULL,
     author_id bigint NOT NULL,
     known_recipients_ids bigint[] NOT NULL,
@@ -38,7 +38,7 @@ CREATE TABLE public.mail (
 );
 
 
-CREATE TABLE public.meeting (
+CREATE TABLE IF NOT EXISTS public.meeting (
     meeting_id bigint NOT NULL,
     author_id bigint NOT NULL,
     moderator_id bigint NOT NULL,
@@ -55,7 +55,7 @@ CREATE TABLE public.meeting (
 );
 
 
-CREATE TABLE public.message (
+CREATE TABLE IF NOT EXISTS public.message (
     message_id bigint NOT NULL,
     user_id bigint NOT NULL,
     text text NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE public.message (
 
 
 
-CREATE TABLE public.scheduler_jobs (
+CREATE TABLE IF NOT EXISTS public.scheduler_jobs (
     job_id integer NOT NULL,
     type text,
     trigger text,
@@ -81,7 +81,7 @@ CREATE TABLE public.scheduler_jobs (
 
 
 
-CREATE TABLE public.task (
+CREATE TABLE IF NOT EXISTS public.task (
     task_id bigint NOT NULL,
     author_id bigint NOT NULL,
     executor_id bigint NOT NULL,
@@ -96,7 +96,7 @@ CREATE TABLE public.task (
 
 
 
-CREATE TABLE public."user" (
+CREATE TABLE IF NOT EXISTS public."user" (
     user_id bigint NOT NULL,
     username text NOT NULL,
     first_name text NOT NULL,
@@ -108,7 +108,7 @@ CREATE TABLE public."user" (
 
 
 
-CREATE TABLE public.user_chat (
+CREATE TABLE IF NOT EXISTS public.user_chat (
     user_chat_id bigint NOT NULL,
     company_id bigint,
     user_id bigint NOT NULL
@@ -117,7 +117,7 @@ CREATE TABLE public.user_chat (
 
 
 
-CREATE TABLE public.user_company (
+CREATE TABLE IF NOT EXISTS public.user_company (
     user_id bigint,
     company_id smallint,
     role text,
@@ -125,7 +125,7 @@ CREATE TABLE public.user_company (
 );
 
 
-CREATE TABLE public.ups (
+CREATE TABLE IF NOT EXISTS public.ups (
     up_id SERIAL PRIMARY KEY,
     chat_id BIGINT NOT NULL,
     start_date TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -140,3 +140,7 @@ CREATE TABLE public.ups (
     is_active BOOLEAN NOT NULL DEFAULT true
 );
 
+CREATE TABLE IF NOT EXISTS public.transcribed_voice_message_text(
+    transcribed_voice_message_text_id SERIAL PRIMARY KEY,
+    text TEXT NOT NULL
+);

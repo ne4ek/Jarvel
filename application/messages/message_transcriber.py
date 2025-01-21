@@ -1,14 +1,15 @@
 import torch
 import os
-from aiogram import types, Bot
+from aiogram import types, Bot, Router, F 
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.exceptions import TelegramBadRequest
-from const import DIRNAME, VOICE_WORDS, MAX_MESSAGE_LENGTH, MAX_VOICE_DURATION, MIN_MESSAGE_LENGTH_FOR_SUMMARIZE
+from const import DIRNAME, VOICE_WORDS, TITLE_FOR_SOURCE_TRANSCRIBED_TEXT, MAX_VOICE_DURATION, MIN_MESSAGE_LENGTH_FOR_SUMMARIZE, MAX_SOURCE_TRANSCRIBED_TEXT_LENGTH, MAX_MESSAGE_LENGTH
 from ai.summarization_prompts import summarization_prompt
 from infrastructure.config.bot_config import bot
 from audio_extract import extract_audio
 from openai import AsyncOpenAI
 from application.messages.custom_errors.duration_error import DurationTooLongError
-from application.providers.repositories_provider import RepositoriesDependencyProvider
+from infrastructure.providers_impl.repositories_provider_async_impl import RepositoriesDependencyProviderImplAsync
 from infrastructure.config.repository_provider_async_config import repositroties_dependency_provider_async
 from domain.entities.transcribed_message import TranscribedMessage
 from functools import wraps
@@ -18,7 +19,7 @@ import asyncio
 import ffmpeg
 
 class TranscribeTelegramMessage:
-    def __init__(self, torch_model, api_key: str, trancriber_model: str, bot: Bot, words_for_transcriber: str, gpt_model: str, gpt_temperature: int, summarizer_prompt: str, repositories: RepositoriesDependencyProvider):
+    def __init__(self, torch_model, api_key: str, trancriber_model: str, bot: Bot, words_for_transcriber: str, gpt_model: str, gpt_temperature: int, summarizer_prompt: str, repositories: RepositoriesDependencyProviderImplAsync):
         self.client = AsyncOpenAI(api_key=api_key)
         self.trancriber_model = trancriber_model
         self.bot = bot
@@ -27,8 +28,33 @@ class TranscribeTelegramMessage:
         self.gpt_model = gpt_model
         self.gpt_temperature = gpt_temperature
         self.summarizer_prompt = summarizer_prompt
+        self.repositories = repositories
         self.user_repository = repositories.get_users_repository()
+        
+    def get_router(self):
+        router = Router()
+        self.register_callbacks(router)
+        return router
     
+    def register_callbacks(self, router: Router):
+        router.callback_query.register(self.source_transcribed_callback, F.data.startswith("get_source_transcribed_text id"))
+        router.callback_query.register(self.short_transcribed_callback, F.data.startswith("get_short_transcribed_text id"))
+
+    async def source_transcribed_callback(self, callback: types.CallbackQuery):
+        id = callback.data.split()[-1]
+        shorted_text = callback.message.text.split("\n\n")[:2]
+        bot_response_message = await self.__get_source_bot_full_message(shorted_text, id)
+        await callback.message.edit_text(text=bot_response_message["text"], reply_markup = bot_response_message["keyboard"], parse_mode="HTML")
+        
+    async def short_transcribed_callback(self, callback: types.CallbackQuery):
+        id = callback.data.split()[-1]
+        text_list = callback.message.text.split("\n\n")
+        short_text = text_list[:2]
+        source_text = text_list[-1].replace(TITLE_FOR_SOURCE_TRANSCRIBED_TEXT, "").strip()
+        truncated_text = self.__truncate_to_words(source_text)
+        bot_response_message = self.__get_short_bot_full_message(short_text, truncated_text, id)
+        await callback.message.edit_text(text=bot_response_message["text"], reply_markup = bot_response_message["keyboard"], parse_mode="HTML") 
+        
     async def execute(self, message: types.Message):
         if message.voice:
             duration = message.voice.duration
@@ -77,9 +103,8 @@ class TranscribeTelegramMessage:
             return audio_file_path
         return
 
-    async def summarize(self, message: TranscribedMessage, user: types.User):
+    async def summarize(self, user_text, user: types.User):
         user_db = await self.user_repository.get_by_id(user.id)
-        user_text = message.text
         if user_db:
             user_text = f"П ({user_db.full_name}): {user_text}"
         else:
@@ -94,6 +119,42 @@ class TranscribeTelegramMessage:
         )
         response_message = response.choices[0].message
         return response_message.content
+
+    def __get_short_bot_message_keyboard(self, id):
+        button_text = "Скрыть"
+        return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text=button_text, callback_data=f"get_short_transcribed_text id {id}")]])
+    
+    def __get_source_bot_message_keyboard(self, id):
+        keyboard_text = "Показать иходное сообщение" 
+        return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text=keyboard_text, callback_data=f"get_source_transcribed_text id {id}")]])
+
+    def __get_short_bot_full_message(self, short_message, truncated_source_text, id):
+        bot_message_text = f"<b>{short_message[0]}</b>\n\n{short_message[1]}\n\n{TITLE_FOR_SOURCE_TRANSCRIBED_TEXT}\n{truncated_source_text}..."
+        return {"text": bot_message_text, "keyboard": self.__get_source_bot_message_keyboard(id)}
+    
+    async def __get_source_bot_full_message(self, short_message, id):
+        sourse_text_repository = self.repositories.get_transcribed_voice_message_text_repository()
+        source_text = await sourse_text_repository.get_text_by_id(int(id))
+        bot_message_text = f"<b>{short_message[0]}</b>\n\n{short_message[1]}\n\n{TITLE_FOR_SOURCE_TRANSCRIBED_TEXT}\n{source_text}"
+        if len(bot_message_text) > MAX_MESSAGE_LENGTH:
+            point_count = 3
+            differences = len(bot_message_text) - MAX_MESSAGE_LENGTH - point_count
+            truncated_source_text = self.__truncate_to_words(source_text, differences)
+            bot_message_text = f"<b>{short_message[0]}</b>\n\n{short_message[1]}\n\n{TITLE_FOR_SOURCE_TRANSCRIBED_TEXT}\n{truncated_source_text}"
+        return {"text": bot_message_text, "keyboard": self.__get_short_bot_message_keyboard(id)}
+    
+    async def get_bot_response_message(self, message, transcribed_message: str):
+        summarized_text = await transcribe_message.summarize(transcribed_message, user=message.from_user)
+        truncated_source_text = self.__truncate_to_words(transcribed_message, MAX_SOURCE_TRANSCRIBED_TEXT_LENGTH)
+        transcribed_voice_message_text_repository = transcribe_message.repositories.get_transcribed_voice_message_text_repository()
+        transcribed_voice_message_text_id = await transcribed_voice_message_text_repository.save(transcribed_message)
+        return self.__get_short_bot_full_message(summarized_text.split("\n\n")[:2], truncated_source_text, transcribed_voice_message_text_id)
+
+    def __truncate_to_words(self, text, max_length=MAX_SOURCE_TRANSCRIBED_TEXT_LENGTH):
+        if len(text) <= max_length:
+            return text
+        truncated = text[:max_length].rsplit(' ', 1)[0]
+        return truncated
 
     async def __save_voice_message(self, message: types.Message):
         is_voice = isinstance(message.voice, types.Voice)
@@ -145,7 +206,7 @@ class TranscribeTelegramMessage:
                                                  from_user=original_message.from_user,
                                                  reply_to_message=original_message.reply_to_message,
                                                  summarized_text=None,
-                                                 original_message=original_message)
+                                                 original_message=original_message,)
         return transcribed_message
     
 model = torch.hub.load(repo_or_dir='snakers4/silero-vad',
@@ -162,6 +223,8 @@ transcribe_message = TranscribeTelegramMessage(torch_model=model,
                                                gpt_temperature=0,
                                                summarizer_prompt=summarization_prompt,
                                                repositories=repositroties_dependency_provider_async)
+
+transcribe_message_router = transcribe_message.get_router()
 
 def audio_to_text_converter(handler):
     @wraps(handler)
@@ -201,15 +264,8 @@ def audio_to_text_converter(handler):
                     if len(transcribed_message.text) < MIN_MESSAGE_LENGTH_FOR_SUMMARIZE:
                         await bot_message.edit_text(transcribed_message.text)
                     else:
-                        summarized_text = await transcribe_message.summarize(transcribed_message, user=message.from_user)
-                        bot_message_text = f"{summarized_text}\n\n==Исходное сообщение==\n{transcribed_message.text}"
-                        if len(bot_message_text) < MAX_MESSAGE_LENGTH:
-                            await bot_message.edit_text(bot_message_text, parse_mode = "HTML")
-                        else:
-                            await bot_message.delete()
-                            bot_messages_text = (bot_message_text[i:i + MAX_MESSAGE_LENGTH] for i in range(0, len(bot_message_text), MAX_MESSAGE_LENGTH))
-                            for bot_message_text_splited in bot_messages_text:
-                                await message.reply(bot_message_text_splited)
+                        bot_responce_message = await transcribe_message.get_bot_response_message(message, transcribed_message.text)
+                        await bot_message.edit_text(text = bot_responce_message["text"], reply_markup = bot_responce_message["keyboard"], parse_mode="HTML")
                 await handler(self, transcribed_message, *args, **kwargs)
             except Exception as e:
                 try:
