@@ -16,5 +16,6 @@ def get_bot_commands():
         types.BotCommand(command="/main_menu", description="Открыть главное меню"),
         types.BotCommand(command="/add_chat_to_company", description="Добавить групповой чат в компанию"),
         types.BotCommand(command="/registration", description="Регистрация в боте"),
+        types.BotCommand(command="/tunnel", description="tunnel"),
     ]
     return bot_commands
