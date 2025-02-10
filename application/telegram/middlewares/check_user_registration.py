@@ -61,8 +61,8 @@ class CheckRegistrationMiddleware(BaseMiddleware):
     @staticmethod
     async def handle_group_chat(self, handler, event, data):
         ic(event)
+        return await handler(event, data)
         if event.voice or event.video_note or event.document or event.video or event.audio:
-            ic(handler)
             return await handler(event, data)
         
         text_to_check = event.text or event.caption

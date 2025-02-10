@@ -13,6 +13,7 @@ from infrastructure.providers_impl.repositories_provider_async_impl import Repos
 from infrastructure.config.repository_provider_async_config import repositroties_dependency_provider_async
 from domain.entities.transcribed_message import TranscribedMessage
 from functools import wraps
+from domain.entities.tunneling_message import TunnelingMessage
 import logging
 from icecream import ic
 import asyncio
@@ -30,6 +31,7 @@ class TranscribeTelegramMessage:
         self.summarizer_prompt = summarizer_prompt
         self.repositories = repositories
         self.user_repository = repositories.get_users_repository()
+        self.tunneling_repository = repositories.get_tunneling_repository()
         
     def get_router(self):
         router = Router()
@@ -197,6 +199,16 @@ class TranscribeTelegramMessage:
             raise ValueError
         return fp_disk
 
+    async def make_simple_send_tunneling(self, message: types.Message, tunneling_messages_from_db: TunnelingMessage, text: str, reply_markup=None) -> None:
+        bot = message.bot
+        for tunneling_message_from_db in tunneling_messages_from_db:
+            await bot.send_message(chat_id=tunneling_message_from_db.to_chat_id, 
+                                    message_thread_id=tunneling_message_from_db.to_topic_id,
+                                    text = text, 
+                                    reply_markup = reply_markup,
+                                    parse_mode = "HTML",
+                                   )
+
     def __get_trancribed_message_entitiy(self, transcription, original_message: types.Message):
         transcribed_message = TranscribedMessage(message_id=original_message.message_id,
                                                  chat=original_message.chat,
@@ -234,6 +246,7 @@ def audio_to_text_converter(handler):
         is_video_document = isinstance(message.document, types.Document) and message.document.mime_type in ["video/webm", "video/mp4"] 
         is_video_video = isinstance(message.video, types.Video) and message.video.mime_type in ["video/webm", "video/mp4"]
         if is_voice or is_video_note or is_video_document or is_video_video:
+            finally_message_for_send = {"text": "", "keyboard": None}
             if is_voice:
                 duration = message.voice.duration
             elif is_video_note:
@@ -246,34 +259,48 @@ def audio_to_text_converter(handler):
             state = None if not state or "empty" in state else state
 
             if duration > MAX_VOICE_DURATION:
-                await message.reply("Сообщение слишком длинное")
+                finally_message_for_send["text"] = "Сообщение слишком длинное"
+                await message.reply(finally_message_for_send["text"], parse_mode="HTML")
+                tunneling_messages_from_db = await transcribe_message.tunneling_repository.get_by_from_info(TunnelingMessage(
+                    from_chat_id=message.chat.id,
+                    from_topic_id=message.message_thread_id,
+                ))
+                await transcribe_message.make_simple_send_tunneling(message, tunneling_messages_from_db, text=finally_message_for_send["text"])
                 await handler(self, message, *args, **kwargs)
-                return
-            try:
-                bot_message = await message.reply("Сообщение обрабатывается...")
+            else:
                 try:
-                    transcribed_message = await transcribe_message.execute(message)
-                except TelegramBadRequest as e:
-                    if is_voice:
-                        await bot_message.edit_text("Голосовое сообщение слишком длинное")
-                    else:
-                        await bot_message.edit_text("Видео слишком длинное")
-                    ic(str(e))
-                    return
-                if not state:       
-                    if len(transcribed_message.text) < MIN_MESSAGE_LENGTH_FOR_SUMMARIZE:
-                        await bot_message.edit_text(transcribed_message.text)
-                    else:
-                        bot_responce_message = await transcribe_message.get_bot_response_message(message, transcribed_message.text)
-                        await bot_message.edit_text(text = bot_responce_message["text"], reply_markup = bot_responce_message["keyboard"], parse_mode="HTML")
-                await handler(self, transcribed_message, *args, **kwargs)
-            except Exception as e:
-                try:
-                    await bot_message.edit_text("Речь не распознана")
-                except TelegramBadRequest as te:
-                    return
-                await handler(self, message, *args, **kwargs)
-                raise e
+                    bot_message = await message.reply("Сообщение обрабатывается...")
+                    try:
+                        transcribed_message = await transcribe_message.execute(message)
+                    except TelegramBadRequest as e:
+                        finally_message_for_send["text"] = "Сообщение слишком длинное"
+                        await bot_message.edit_text(finally_message_for_send["text"], parse_mode="HTML")
+                        ic(str(e))
+                        return
+                    if not state:       
+                        if len(transcribed_message.text) < MIN_MESSAGE_LENGTH_FOR_SUMMARIZE:
+                            finally_message_for_send["text"] = transcribed_message.text
+                        else:
+                            bot_response_message = await transcribe_message.get_bot_response_message(message, transcribed_message.text)
+                            finally_message_for_send["text"] = bot_response_message["text"]
+                            finally_message_for_send["keyboard"] = bot_response_message["keyboard"] 
+                    await bot_message.edit_text(text = finally_message_for_send["text"], 
+                                                reply_markup = finally_message_for_send["keyboard"],
+                                                parse_mode="HTML")
+                    tunneling_messages_from_db = await transcribe_message.tunneling_repository.get_by_from_info(TunnelingMessage(
+                        from_chat_id=message.chat.id,
+                        from_topic_id=message.message_thread_id,
+                    ))
+                    await transcribe_message.make_simple_send_tunneling(message, tunneling_messages_from_db, text=finally_message_for_send["text"], reply_markup=finally_message_for_send["keyboard"])
+                    await handler(self, transcribed_message, *args, **kwargs)
+                except Exception as e:
+                    try:
+                        await bot_message.delete()
+                        pass
+                    except TelegramBadRequest as te:
+                        return
+                    await handler(self, message, *args, **kwargs)
+                    raise e
         else:
             await handler(self, message, *args, **kwargs)
     return wrapper

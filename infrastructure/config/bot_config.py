@@ -2,7 +2,7 @@ from aiogram import Bot, types
 import os
 from dotenv import load_dotenv
 load_dotenv()
-print(os.getenv("BOT_TOKEN"))
+
 bot = Bot(token=os.getenv("BOT_TOKEN"))
 
 def get_bot_commands():
@@ -16,6 +16,9 @@ def get_bot_commands():
         types.BotCommand(command="/main_menu", description="Открыть главное меню"),
         types.BotCommand(command="/add_chat_to_company", description="Добавить групповой чат в компанию"),
         types.BotCommand(command="/registration", description="Регистрация в боте"),
-        types.BotCommand(command="/tunnel", description="tunnel"),
+        types.BotCommand(command="/tunnel", description="Создает туннель между чатами"),
+        types.BotCommand(command="/stop_tunnel", description="Удаляет туннель из указанного чата"),
+        types.BotCommand(command="/stop_all_tunnel", description="Удаляет все туннели")
+        
     ]
     return bot_commands

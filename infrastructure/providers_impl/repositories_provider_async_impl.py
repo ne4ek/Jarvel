@@ -12,6 +12,7 @@ from infrastructure.repositories_impl.postgres.asynchronous.postgres_arbitrary_u
 from infrastructure.repositories_impl.postgres.asynchronous.postgres_ups_repository_async import PostgresUpRepositoryAsync
 from infrastructure.repositories_impl.postgres.asynchronous.postgres_transcribed_voice_message_text_async import PostgresTranscribedVoiceMessageTextAsync
 from infrastructure.repositories_impl.postgres.asynchronous.postgres_tunneling_async import PostgresTunnelingAsync
+from infrastructure.repositories_impl.postgres.asynchronous.postgrs_media_group_repository_async import PostgresMediaGroupRepositoryAsync
 
 class RepositoriesDependencyProviderImplAsync:
     def __init__(self,
@@ -28,6 +29,7 @@ class RepositoriesDependencyProviderImplAsync:
                  ups_repository: PostgresUpRepositoryAsync,
                  transcribed_voice_message_text_repository: PostgresTranscribedVoiceMessageTextAsync,
                  tunneling_repository: PostgresTunnelingAsync,
+                 media_group_repository: PostgresMediaGroupRepositoryAsync,
                  ):
         self.users_repository = users_repository
         self.companies_repository = companies_repository
@@ -42,6 +44,7 @@ class RepositoriesDependencyProviderImplAsync:
         self.ups_repository = ups_repository
         self.transcribed_voice_message_text_repository = transcribed_voice_message_text_repository
         self.tunneling_repository = tunneling_repository
+        self.media_group_repository = media_group_repository
 
     def get_users_repository(self):
         return self.users_repository
@@ -81,3 +84,6 @@ class RepositoriesDependencyProviderImplAsync:
     
     def get_tunneling_repository(self) -> PostgresTunnelingAsync:
         return self.tunneling_repository
+    
+    def get_media_group_repository(self) -> PostgresMediaGroupRepositoryAsync:
+        return self.media_group_repository

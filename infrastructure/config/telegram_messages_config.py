@@ -43,6 +43,6 @@ message_service = TelegramMessageService(repository_provider=repositroties_depen
                                          usecases=usecases_provider,
                                          distributor=distributor)
 
-messages_handlers = ProcessMessageHandlers(message_service=message_service)
+messages_handlers = ProcessMessageHandlers(message_service=message_service, repository_provider = repositroties_dependency_provider_async)
 
 messages_router = messages_handlers.get_router()
