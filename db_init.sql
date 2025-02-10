@@ -144,3 +144,19 @@ CREATE TABLE IF NOT EXISTS public.transcribed_voice_message_text(
     transcribed_voice_message_text_id SERIAL PRIMARY KEY,
     text TEXT NOT NULL
 );
+
+
+CREATE TABLE IF NOT EXISTS public.tunneling(
+    tunneling_id SERIAL PRIMARY KEY,
+    specify_chat_pinned_message_id INT NOT NULL,
+    source_chat_pinned_message_id INT NOT NUll,
+    to_chat_id BIGINT NOT NULL,
+    to_topic_id INT NOT NULL,
+    from_chat_id BIGINT NOT NULL,
+    from_topic_id INT NOT NULL
+);
+
+
+CREATE TABLE IF NOT EXISTS public.media_group(
+    media_group_id BIGINT NOT NUll
+);

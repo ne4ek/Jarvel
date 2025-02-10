@@ -14,6 +14,8 @@ arbitrary_data_repository= PostgresArbitraryUserDataRepositoryAsync(connection_p
 ctrls_repository= PostgresCtrlsRepositoryAsync(connection_pool)
 up_repository = PostgresUpRepositoryAsync(connection_pool)
 transcribed_voice_message_text_repository = PostgresTranscribedVoiceMessageTextAsync(connection_pool)
+tunneling_repository = PostgresTunnelingAsync(connection_pool)
+media_group_repository = PostgresMediaGroupRepositoryAsync(connection_pool)
 
 repositroties_dependency_provider_async = RepositoriesDependencyProviderImplAsync(users_repository=users_repository,
 companies_repository=companies_repository,
@@ -27,4 +29,6 @@ arbitrary_data_repository=arbitrary_data_repository,
 ctrls_repository=ctrls_repository,
 ups_repository=up_repository,
 transcribed_voice_message_text_repository=transcribed_voice_message_text_repository,
+tunneling_repository=tunneling_repository,
+media_group_repository=media_group_repository,
 )

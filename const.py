@@ -123,3 +123,4 @@ MIN_MESSAGE_LENGTH_FOR_SHORTENING = 1000
 MAX_SOURCE_TRANSCRIBED_TEXT_LENGTH = 60
 TITLE_FOR_SOURCE_TRANSCRIBED_TEXT = "==Исходное сообщение=="
 TIME_FOR_SHOW_SHORT_MESSAGE = timedelta(minutes=10)
+TITLE_TEMPLATE_FOR_SEND_TUNNELING = "Отправитель: <a href='https://t.me/{message.from_user.username}'>{message.from_user.first_name}</a>"

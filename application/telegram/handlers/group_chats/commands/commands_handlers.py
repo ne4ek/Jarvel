@@ -1,6 +1,6 @@
 from aiogram import types, F, Router
 from aiogram.filters import Command, CommandObject
-
+#Now this class does not use
 class GroupChatCommandHandlers:
     def __init__(self, main_menu_keyboard: types.InlineKeyboardMarkup):
         self.main_menu_keyboard = main_menu_keyboard
@@ -18,7 +18,7 @@ class GroupChatCommandHandlers:
         await message.reply(response)
 
     async def main_menu_command(self, message: types.Message):
-        text = "Главное меню"
+        text = "Главное менюnr"
         
         await message.answer(text=text, reply_markup=self.main_menu_keyboard)
         
