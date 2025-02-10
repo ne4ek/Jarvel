@@ -114,32 +114,32 @@ def is_telegram_link(url: str):
     return re.match(pattern, url)
     
     
-@router_commands.message(Command("stop_all_tunnel"), F.chat.type != "private")
-async def stop_all_tunel(message: Message, state: FSMContext):
-    tunneling_message = TunnelingMessage(from_chat_id=message.chat.id, from_topic_id=message.message_thread_id)
-    tunneling_messages_from_db = await tunneling_repository.get_by_from_info(tunneling_message=tunneling_message)
-    bot = message.bot
-    sourse_chat_link = get_telegram_link(tunneling_message.from_chat_id, tunneling_message.from_topic_id)
-    text_for_listener_chat = f"Тунелирование из чата {sourse_chat_link} было прекращено."
-    if tunneling_messages_from_db:
-        text_for_source_chat = "Туннелирование из этого чата в чаты:\n"
-        await tunneling_repository.delete_all_by_from(tunneling_message)
-        for tunneling_message_from_db in tunneling_messages_from_db:
-            try:
-                await bot.send_message(chat_id=tunneling_message_from_db.to_chat_id, message_thread_id=tunneling_message_from_db.to_topic_id, text=text_for_listener_chat)
-                try:
-                    await bot.unpin_chat_message(chat_id=tunneling_message_from_db.to_chat_id, message_id=tunneling_message_from_db.specify_chat_pinned_message_id)
-                except TelegramBadRequest as tbr: pass
-            except TelegramBadRequest as tbr:
-                ic(str(tbr))
-            text_for_source_chat += get_telegram_link(tunneling_message_from_db.to_chat_id, tunneling_message_from_db.to_topic_id) + "\n"
-        text_for_source_chat += "было прекращено."
-    else:
-        text_for_source_chat = "Этот чат не туннелируется."
-    await message.reply(text=text_for_source_chat)
-    try:
-        await bot.unpin_chat_message(chat_id=tunneling_message_from_db.from_chat_id, message_id=tunneling_message_from_db.source_chat_pinned_message_id)
-    except TelegramBadRequest as tbr: pass
+# @router_commands.message(Command("stop_all_tunnel"), F.chat.type != "private")
+# async def stop_all_tunel(message: Message, state: FSMContext):
+#     tunneling_message = TunnelingMessage(from_chat_id=message.chat.id, from_topic_id=message.message_thread_id)
+#     tunneling_messages_from_db = await tunneling_repository.get_by_from_info(tunneling_message=tunneling_message)
+#     bot = message.bot
+#     sourse_chat_link = get_telegram_link(tunneling_message.from_chat_id, tunneling_message.from_topic_id)
+#     text_for_listener_chat = f"Тунелирование из чата {sourse_chat_link} было прекращено."
+#     if tunneling_messages_from_db:
+#         text_for_source_chat = "Туннелирование из этого чата в чаты:\n"
+#         await tunneling_repository.delete_all_by_from(tunneling_message)
+#         for tunneling_message_from_db in tunneling_messages_from_db:
+#             try:
+#                 await bot.send_message(chat_id=tunneling_message_from_db.to_chat_id, message_thread_id=tunneling_message_from_db.to_topic_id, text=text_for_listener_chat)
+#                 try:
+#                     await bot.unpin_chat_message(chat_id=tunneling_message_from_db.to_chat_id, message_id=tunneling_message_from_db.specify_chat_pinned_message_id)
+#                 except TelegramBadRequest as tbr: pass
+#             except TelegramBadRequest as tbr:
+#                 ic(str(tbr))
+#             text_for_source_chat += get_telegram_link(tunneling_message_from_db.to_chat_id, tunneling_message_from_db.to_topic_id) + "\n"
+#         text_for_source_chat += "было прекращено."
+#     else:
+#         text_for_source_chat = "Этот чат не туннелируется."
+#     await message.reply(text=text_for_source_chat)
+#     try:
+#         await bot.unpin_chat_message(chat_id=tunneling_message_from_db.from_chat_id, message_id=tunneling_message_from_db.source_chat_pinned_message_id)
+#     except TelegramBadRequest as tbr: pass
 
 
 @router_commands.message(Command("stop_tunnel"), F.chat.type != "private")
