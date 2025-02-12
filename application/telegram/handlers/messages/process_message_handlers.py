@@ -54,8 +54,6 @@ class ProcessMessageHandlers:
     async def __make_forward_tunneling(self, message: types.Message, tunneling_messages_from_db: TunnelingMessage) -> None:
         bot = message.bot
         try:
-            await self.__make_send_tunneling(message, tunneling_messages_from_db)
-            return 
             for tunneling_message_from_db in tunneling_messages_from_db:
                 if message.reply_to_message:
                     await bot.forward_message(chat_id=tunneling_message_from_db.to_chat_id, 
@@ -101,10 +99,7 @@ class ProcessMessageHandlers:
             if sended_message:
                 response_on_message = f"\nОтвет на {self.__get_link_to_message(sended_message)}"
             message_last_name = message.from_user.last_name if message.from_user.last_name else ''
-            if message.from_user.username == "jarveltest":
-                ic("jarveltest have written")
             message_title = f'''Отправитель: <a href='https://t.me/{message.from_user.username}'>{message.from_user.first_name} {message_last_name}</a>\nВремя {self.__get_time(message)}''' + response_on_message
-            ic(message_title)
             if not(message.media_group_id and await self.media_group_repository.is_exists(message.media_group_id)):
                 await bot.send_message(tunneling_message_from_db.to_chat_id, message_title, message_thread_id=tunneling_message_from_db.to_topic_id, parse_mode="HTML", disable_web_page_preview=True)
             if message.text:
@@ -148,7 +143,7 @@ class ProcessMessageHandlers:
     async def __video_note_send(self, message, tunneling_message, message_for_reply=None):
         bot = message.bot
         reply_to_message_id = None if not message_for_reply else message_for_reply.message_id
-        sended_message = await bot.send_video_note(tunneling_message.to_chat_id, message.video_node.file_id, message_thread_id=tunneling_message.to_topic_id, reply_to_message_id=reply_to_message_id)
+        sended_message = await bot.send_video_note(tunneling_message.to_chat_id, message.video_note.file_id, message_thread_id=tunneling_message.to_topic_id, reply_to_message_id=reply_to_message_id)
         return sended_message
     
     async def __document_send(self, message, tunneling_message, message_for_reply=None):
