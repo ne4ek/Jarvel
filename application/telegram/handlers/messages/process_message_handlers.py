@@ -231,16 +231,13 @@ class ProcessMessageHandlers:
                 
             bot_message = await message.reply(text="Обрабатываю запрос...")
             response: dict = await self.message_service.call_assistant(bot_message, message, state)
-            ic(response)
             try:
                 if response:
                     parse_mode = response.get("parse_mode") if "parse_mode" in response.keys() else ParseMode.HTML
                 else:
                     parse_mode = ParseMode.HTML
-                ic(parse_mode)
                 bot_message = await bot_message.edit_text(text=response.get("message"), reply_markup=response.get("keyboard"), parse_mode=parse_mode)
                 await self.message_service.save_message(bot_message)
-                ic(message)
                 tunneling_message = TunnelingMessage(from_chat_id=message.chat.id, from_topic_id=message.original_message.message_thread_id)
                 tunneling_message_from_db = await self.tunneling_repository.get_by_from_info(tunneling_message)
                 if tunneling_message_from_db:
