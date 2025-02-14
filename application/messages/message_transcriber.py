@@ -275,7 +275,7 @@ def audio_to_text_converter(handler):
                     except TelegramBadRequest as e:
                         finally_message_for_send["text"] = "Сообщение слишком длинное"
                         await bot_message.edit_text(finally_message_for_send["text"], parse_mode="HTML")
-                        ic(str(e))
+                        ic("Сообщение слишком длинное")
                         return
                     if not state:       
                         if len(transcribed_message.text) < MIN_MESSAGE_LENGTH_FOR_SUMMARIZE:
