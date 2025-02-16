@@ -222,7 +222,7 @@ class ProcessMessageHandlers:
         await message.reply(ctrl_result)
 
     @audio_to_text_converter
-    async def message_handler(self, message: TranscribedMessage, state: FSMContext):
+    async def message_handler(self, message: TranscribedMessage | types.Message, state: FSMContext):
         message_text = message.text or message.caption
         if message_text:
             await self.message_service.save_message(message)
@@ -238,7 +238,10 @@ class ProcessMessageHandlers:
                     parse_mode = ParseMode.HTML
                 bot_message = await bot_message.edit_text(text=response.get("message"), reply_markup=response.get("keyboard"), parse_mode=parse_mode)
                 await self.message_service.save_message(bot_message)
-                tunneling_message = TunnelingMessage(from_chat_id=message.chat.id, from_topic_id=message.original_message.message_thread_id)
+                if isinstance(message, TranscribedMessage):  
+                    tunneling_message = TunnelingMessage(from_chat_id=message.chat.id, from_topic_id=message.original_message.message_thread_id)
+                else:
+                    tunneling_message = TunnelingMessage(from_chat_id=message.chat.id, from_topic_id=message.message_thread_id)
                 tunneling_message_from_db = await self.tunneling_repository.get_by_from_info(tunneling_message)
                 if tunneling_message_from_db:
                     await self.__make_simple_send_tunneling(message, tunneling_message_from_db, text=response.get("message"), reply_markup=response.get("keyboard"))
