@@ -90,13 +90,14 @@ async def tunnel_waiting_for_chat_link(message: Message, state: FSMContext):
             try:
                 bot_sended_message_to_specify_chat = await bot.send_message(chat_id=to_chat_id, text=message_for_send_to_specify_chat, message_thread_id=to_topic_id)
                 try:
-                    specify_chat_pinned_message = await bot.pin_chat_message(chat_id=to_chat_id, message_id=bot_sended_message_to_specify_chat.message_id)
+                    await bot.pin_chat_message(chat_id=to_chat_id, message_id=bot_sended_message_to_specify_chat.message_id)
                 except TelegramBadRequest as tbr: pass
             except TelegramBadRequest as tbr:
                 message_for_send_to_source_chat = "Возникла ошибка при попытке связаться с указанным чатом."
                 await message.reply(message_for_send_to_source_chat)
                 ic(str(tbr))
                 tunneling_message.specify_chat_pinned_message_id = bot_sended_message_to_specify_chat.message_id
+            finally:
                 await tunneling_repository.save(tunneling_message)
     await state.clear()
     
@@ -179,7 +180,7 @@ async def tunnel_waiting_for_chat_link(message: Message, state: FSMContext):
             except TelegramBadRequest: ic("trable with unpining in specify chat")
             try:
                 await bot.unpin_chat_message(chat_id=tunneling_message_from_db.to_chat_id, message_id=tunneling_message_from_db.specify_chat_pinned_message_id)
-            except TelegramBadRequest: ic("trable with unpining in source chat")
+            except TelegramBadRequest: pass
     await state.clear()
 
 
