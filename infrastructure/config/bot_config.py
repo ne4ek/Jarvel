@@ -18,6 +18,7 @@ def get_bot_commands():
         types.BotCommand(command="/registration", description="Регистрация в боте"),
         types.BotCommand(command="/tunnel", description="Создает туннель между чатами"),
         types.BotCommand(command="/stop_tunnel", description="Удаляет туннель из указанного чата"),
+        # types.BotCommand(command="/stop_all_tunnel", description="Удаляет все туннели")
         # types.BotCommand(command="/stop_all_tunnel", description="")
         
     ]

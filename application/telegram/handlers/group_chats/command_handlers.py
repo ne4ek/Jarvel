@@ -96,14 +96,7 @@ async def tunnel_waiting_for_chat_link(message: Message, state: FSMContext):
                 message_for_send_to_source_chat = "Возникла ошибка при попытке связаться с указанным чатом."
                 await message.reply(message_for_send_to_source_chat)
                 ic(str(tbr))
-            else:
-                message_for_send_to_source_chat = f'echo "HI tunnel started... successfully..." 🫡.\nTo {get_telegram_link(to_chat_id, to_topic_id)}'
-                bot_sended_message_to_source_chat = await message.reply(message_for_send_to_source_chat)
-                try:
-                    source_chat_pinned_message = await bot.pin_chat_message(chat_id=from_chat_id, message_id=bot_sended_message_to_source_chat.message_id)
-                except TelegramBadRequest as tbr: pass
                 tunneling_message.specify_chat_pinned_message_id = bot_sended_message_to_specify_chat.message_id
-                tunneling_message.source_chat_pinned_message_id = bot_sended_message_to_source_chat.message_id
                 await tunneling_repository.save(tunneling_message)
     await state.clear()
     
