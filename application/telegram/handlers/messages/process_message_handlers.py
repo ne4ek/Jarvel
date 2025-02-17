@@ -96,6 +96,9 @@ class ProcessMessageHandlers:
             elif message.reply_to_message and message.reply_to_message.video:
                 await self.__reply_message_title_send(message, tunneling_message_from_db)
                 sended_message = await self.__video_send(message, tunneling_message_from_db)    
+            elif message.reply_to_message and message.reply_to_message.sticker:
+                await self.__reply_message_title_send(message, tunneling_message_from_db)
+                sended_message = await self.__sticker_send(message.reply_to_message, tunneling_message_from_db)
 
             if sended_message:
                 response_on_message = f"\nОтвет на {self.__get_link_to_message(sended_message)}"
@@ -115,6 +118,8 @@ class ProcessMessageHandlers:
                 await self.__photo_send(message, tunneling_message_from_db, sended_message)
             elif message.video:
                 await self.__video_send(message, tunneling_message_from_db, sended_message)
+            elif message.sticker:
+                await self.__sticker_send(message, tunneling_message_from_db, sended_message)
 
     def __get_link_to_message(self, message):
         if message.message_thread_id:
@@ -163,6 +168,12 @@ class ProcessMessageHandlers:
         bot = message.bot
         reply_to_message_id = None if not message_for_reply else message_for_reply.message_id
         sended_message = await bot.send_video(tunneling_message.to_chat_id, message.video.file_id, message_thread_id=tunneling_message.to_topic_id, reply_to_message_id=reply_to_message_id)
+        return sended_message
+
+    async def __sticker_send(self, message, tunneling_message, message_for_reply=None):
+        bot = message.bot
+        reply_to_message_id = None if not message_for_reply else message_for_reply.message_id
+        sended_message = await bot.send_sticker(tunneling_message.to_chat_id, message.sticker.file_id, message_thread_id=tunneling_message.to_topic_id, reply_to_message_id=reply_to_message_id)
         return sended_message
 
 
