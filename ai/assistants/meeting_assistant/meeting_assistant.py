@@ -323,7 +323,8 @@ class MeetingAssistant(Assistant):
             meeting_datetime = pytz.timezone('Europe/Moscow').localize(meeting_datetime)
             return meeting_datetime
         elif date_datetime:
-            date_datetime = pytz.timezone('Europe/Moscow').localize(date_datetime)
+            ic(date_datetime)
+            date_datetime = pytz.timezone('Europe/Moscow').localize(datetime.combine(date_datetime, datetime.min.time()))
             return date_datetime
         elif time_datetime:
             date_datetime = datetime.now(pytz.utc).astimezone(pytz.timezone('Europe/Moscow')).date()

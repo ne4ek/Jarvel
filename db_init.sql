@@ -90,7 +90,8 @@ CREATE TABLE IF NOT EXISTS public.task (
     tag text,
     deadline_datetime timestamp with time zone NOT NULL,
     status text NOT NULL,
-    company_id smallint NOT NULL
+    company_id smallint NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
