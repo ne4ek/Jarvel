@@ -13,7 +13,7 @@ load_dotenv()
 
 
 distributor = Distributor(api_key=os.getenv("GPT_API_KEY"),
-                          model="gpt-4o-mini",
+                          model="gpt-4o",
                           temperature=0,
                           prompt=distributor_intro,
                           function=distibutor_func)

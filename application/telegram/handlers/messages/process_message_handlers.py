@@ -11,7 +11,7 @@ from domain.entities.transcribed_message import TranscribedMessage
 from icecream import ic
 from aiogram.exceptions import TelegramBadRequest
 import re
-from const import TITLE_TEMPLATE_FOR_SEND_TUNNELING
+from const import TITLE_TEMPLATE_FOR_SEND_TUNNELING, PHRASES_FOR_IGNORE_MESSAGE 
 import os
 from datetime import datetime
 import pytz
@@ -30,6 +30,7 @@ class ProcessMessageHandlers:
 
     def register_handlers(self, router: Router):
         router.message(F.chat.type != "private", self._async_filter(self.tunneling_is_on))(self.message_handler)
+        router.message(F.chat.type != "private", F.func(self.ignore_message))(self.ignore_message_handler)
         router.message(F.chat.type != "private", F.func(self.contains_ctrl_in_words))(self.ctrl_message_handler)
         router.message(F.chat.type != "private", F.func(self.contains_up_in_words))(self.up_message_handler)
         router.message(F.chat.type != "private", F.func(self.contains_vipolnil_in_words))(self.up_ready_handler)
@@ -39,6 +40,15 @@ class ProcessMessageHandlers:
         async def wrapped(*args, **kwargs):
             return await coro_func(*args, **kwargs)
         return wrapped
+    
+    def ignore_message(self, message: types.Message) -> bool:
+        for phrase in PHRASES_FOR_IGNORE_MESSAGE:
+            if phrase in message.text:
+                return True
+        return False
+    
+    async def ignore_message_handler(self, message: types.Message):
+        return
     
     async def tunneling_is_on(self, message: types.Message, **kwargs) -> bool:
         ic("tunneling_check")

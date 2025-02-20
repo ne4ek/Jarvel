@@ -124,3 +124,4 @@ MAX_SOURCE_TRANSCRIBED_TEXT_LENGTH = 60
 TITLE_FOR_SOURCE_TRANSCRIBED_TEXT = "==Исходное сообщение=="
 TIME_FOR_SHOW_SHORT_MESSAGE = timedelta(minutes=10)
 TITLE_TEMPLATE_FOR_SEND_TUNNELING = "Отправитель: <a href='https://t.me/{message.from_user.username}'>{message.from_user.first_name}</a>"
+PHRASES_FOR_IGNORE_MESSAGE = ["// Ягодка r2d2, Leo's HI assistant 🌞", "Sent via: Ягодка r2d2🌞 (Leo's HI assistant)"]
