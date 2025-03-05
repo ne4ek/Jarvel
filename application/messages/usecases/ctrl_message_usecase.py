@@ -18,25 +18,18 @@ class CtrlMessageUseCase:
         for user in _mentioned_users:
             if user != '@' + bot_username and user not in mentioned_users:
                 mentioned_users.append(user)
-
+        ic(mentioned_users)
         ctrl_text = re.search(r"ctrl (.*)", text.lower())
-        ic(ctrl_text)
         ctrl_text = ctrl_text.group(1) if ctrl_text else "24"
-        ic(ctrl_text)
         if ctrl_text != "24":
-            # find number associated with "w" (weeks)
             w = re.findall(r"(\d+)w", ctrl_text)
             w = int(w[0]) if w else 0
-            # find number associated with "d" (days)
             d = re.findall(r"(\d+)d", ctrl_text)
             d = int(d[0]) if d else 0
-            # find number associated with "h" (hours)
             h = re.findall(r"(\d+)h", ctrl_text)
             h = int(h[0]) if h else 0
-            # find number associated with "m" (minutes)
             m = re.findall(r"(\d+)m", ctrl_text)
             m = int(m[0]) if m else 0
-        # if no tags were found
         if not any([w, d, h, m]):
             h = re.findall(r"\d+", ctrl_text)
             h = int(h[0]) if h else 24

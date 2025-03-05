@@ -228,9 +228,9 @@ class ProcessMessageHandlers:
         if message.forward_from:
             return
         text = message.text
-        if message.reply_to_message:
-            replyed_message = message.reply_to_message
-            text = f"@{replyed_message.from_user.username}  {replyed_message.text} {text}"
+        # if message.reply_to_message:
+        #     replyed_message = message.reply_to_message
+        #     text = f"@{replyed_message.from_user.username}  {replyed_message.text} {text}"
         bot = await message.bot.get_me()
         bot_username = bot.username
         sender_username = "@" + message.from_user.username
