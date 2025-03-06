@@ -45,3 +45,24 @@ class Distributor:
             temperature=self.temperature,
         )
         return response.choices[0].message.content
+    
+    async def get_talker_assistant(self):
+        assistant_to_call = "talker"
+        return self._available_assistants[assistant_to_call]
+    
+    
+    async def get_task_assistant(self):
+        assistant_to_call = "task_assistant"
+        return self._available_assistants[assistant_to_call]
+    
+    async def get_meeting_assistant(self):
+        assistant_to_call = "meeting_assistant"
+        return self._available_assistants[assistant_to_call]
+    
+    async def get_mailing_assistant(self):
+        assistant_to_call = "mailing_assistant"
+        return self._available_assistants[assistant_to_call]
+    
+    async def get_arbitrary_data_manager_assistant(self):
+        assistant_to_call = "arbitrary_data_manager"
+        return self._available_assistants[assistant_to_call]

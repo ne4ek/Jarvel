@@ -8,8 +8,12 @@ from domain.entities.message import Message
 from ai.assistants.distributor.distributor import Distributor
 from ai.assistants.talker.talker import Talker
 from ai.arbitrary_data_manager.arbitrary_data_manager import ArbitraryDataManager
+
+
 from domain.entities.transcribed_message import TranscribedMessage
 from domain.entities.group_chat import GroupChat
+
+
 from icecream import ic
 import re
 import html
@@ -37,7 +41,35 @@ class TelegramMessageService:
     def is_bot_mentioned(self, text):
         return self.usecases.is_bot_mentioned.execute(text)
 
-    async def call_assistant(self, bot_message: types.Message, user_message: Union[TranscribedMessage, types.Message], state: FSMContext):
+    async def get_assistant(self, user_message: Union[TranscribedMessage, types.Message]):
+        messages = await self.__get_messages(user_message)
+        assistant = await self.distributor.get_assistant(messages)
+        return assistant
+    
+    
+    async def call_assistant(self, bot_message: types.Message, user_message: Union[TranscribedMessage, types.Message], state: FSMContext, assistant=None):
+        if not assistant:
+            assistant = await self.distributor.get_talker_assistant()
+        messages = await self.__get_messages(user_message)
+        ic(assistant)
+        if isinstance(assistant, Talker):
+            ic("Talker")
+            messages = await self.__generate_assistant_messages(bot_message.chat.id, bot_message.bot.id, 20)
+            message_to_send = await assistant.get_response(messages, user_message)
+        elif isinstance(assistant, ArbitraryDataManager):
+            del messages[0]
+            message_to_send = await assistant.execute_action(initial_messages=messages, user_id=user_message.from_user.id)
+        else:
+            company_code = await self.__get_company_code(user_message.chat.id)
+            if not company_code:
+                await self.__add_group_chat_to_Belomorie(bot_message)
+            job_entity = await assistant.get_all_parameters(messages=messages,
+                                                            company_code=company_code)
+            await state.update_data({str(job_entity.__class__.__name__).lower(): {"entity": job_entity, "message": bot_message}})
+            message_to_send = assistant.compose_telegram_filling_message(job_entity)
+        return message_to_send
+
+    async def __get_messages(self, user_message: Union[TranscribedMessage, types.Message]):
         reply_message = user_message.reply_to_message
         sender_name = await self.__get_message_sender_full_name(user_message.from_user.id)
         if reply_message and reply_message.from_user.id == user_message.bot.id:
@@ -55,30 +87,8 @@ class TelegramMessageService:
             messages = [
                 {"role": "user", "content": f"П ({sender_name}): {user_message.text}"}
             ]
-        assistant = await self.distributor.get_assistant(messages)
-        ic(assistant)
-        if not assistant:
-            return
-        if isinstance(assistant, Talker):
-            messages = await self.__generate_assistant_messages(bot_message.chat.id, bot_message.bot.id, 20)
-            message_to_send = await assistant.get_response(messages, user_message)
-        elif isinstance(assistant, ArbitraryDataManager):
-            del messages[0]
-            message_to_send = await assistant.execute_action(initial_messages=messages, user_id=user_message.from_user.id)
-        else:
-            company_code = await self.__get_company_code(user_message.chat.id)
-            if not company_code:
-                #this is a temporary solution
-                await self.__add_group_chat_to_Belomorie(bot_message)
-                # message = ("Для использования этой функции вам необходимо зарегистрировать данный чат в компании\n"
-                #           "Используйте команду /add_chat_to_company")
-                # return {"message": message, "keyboard": None, "parse_mode": None}
-            job_entity = await assistant.get_all_parameters(messages=messages,
-                                                            company_code=company_code)
-            await state.update_data({str(job_entity.__class__.__name__).lower(): {"entity": job_entity, "message": bot_message}})
-            message_to_send = assistant.compose_telegram_filling_message(job_entity)
-        return message_to_send
-
+            
+        return messages
     async def summarize_text(self, text):
         return await self.usecases.summarize_message_usecase.execute(text)
 
@@ -185,3 +195,17 @@ message: {text}
         
     async def shorten_text(self, text_for_shorting):
         return await self.distributor.shorten_message(text_for_shorting)
+    
+    async def get_task_assistant(self):
+        return await self.distributor.get_task_assistant()
+    
+    async def get_meeting_assistant(self):
+        return await self.distributor.get_meeting_assistant()
+    
+    async def get_mailing_assistant(self):
+        return await self.distributor.get_mailing_assistant()
+    
+    async def get_arbitrary_data_manager_assistant(self):
+        return await self.distributor.get_arbitrary_data_manager_assistant()
+    
+    
