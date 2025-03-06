@@ -18,22 +18,29 @@ class PostgresTasksRepositoryAsync(TasksRepository):
     @open_and_close_connection
     async def save(self, task: Task, connection=None) -> int:
         sql_query = (
-            'INSERT INTO public.task (executor_id, author_id, description, task_summary, deadline_datetime, status, tag, company_id, created_at) '
-            'VALUES ($1, $2, $3, $4, $5, $6, $7, (SELECT company_id FROM public.company WHERE company_code = $8), $9) '
+            'INSERT INTO public.task (executor_id, author_id, description, task_summary, deadline_datetime, status, tag, company_id) '
+            'VALUES ($1, $2, $3, $4, $5, $6, $7, (SELECT company_id FROM public.company WHERE company_code = $8)) '
             'RETURNING task_id;'
         )
-        sql_values = (
-            task.executor_id,
-            task.author_id,
-            task.task,
-            task.task_summary,
-            task.deadline_datetime,
-            task.status,
-            task.tag,
-            task.company_code,
-            datetime.now(pytz.utc).astimezone(pytz.timezone('Europe/Moscow')),
-        )
-        result = await connection.fetch(sql_query, *sql_values)
+        ic(sql_query, 
+                                        task.executor_id,
+                                        task.author_id,
+                                        task.task,
+                                        task.task_summary,
+                                        task.deadline_datetime,
+                                        task.status,
+                                        task.tag,
+                                        task.company_code,)
+        
+        result = await connection.fetch(sql_query, 
+                                        task.executor_id,
+                                        task.author_id,
+                                        task.task,
+                                        task.task_summary,
+                                        task.deadline_datetime,
+                                        task.status,
+                                        task.tag,
+                                        task.company_code,)
 
         return result[0]['task_id'] if result else None
 

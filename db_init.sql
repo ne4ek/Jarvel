@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS public.group_chat (
 
 
 CREATE TABLE IF NOT EXISTS public.mail (
-    mail_id bigint NOT NULL,
+    mail_id SERIAL PRIMARY KEY,
     author_id bigint NOT NULL,
     known_recipients_ids bigint[] NOT NULL,
     unknown_recipients_data jsonb[],
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS public.mail (
 
 
 CREATE TABLE IF NOT EXISTS public.meeting (
-    meeting_id bigint NOT NULL,
+    meeting_id SERIAL PRIMARY KEY,
     author_id bigint NOT NULL,
     moderator_id bigint NOT NULL,
     topic text NOT NULL,
@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS public.scheduler_jobs (
 
 
 CREATE TABLE IF NOT EXISTS public.task (
-    task_id bigint NOT NULL,
+    task_id SERIAL PRIMARY KEY,
     author_id bigint NOT NULL,
     executor_id bigint NOT NULL,
     description text NOT NULL,
@@ -90,7 +90,8 @@ CREATE TABLE IF NOT EXISTS public.task (
     tag text,
     deadline_datetime timestamp with time zone NOT NULL,
     status text NOT NULL,
-    company_id smallint NOT NULL
+    company_id smallint NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
 );
 
 
