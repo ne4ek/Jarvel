@@ -127,7 +127,7 @@ class TranscribeTelegramMessage:
         return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text=button_text, callback_data=f"get_short_transcribed_text id {id}")]])
     
     def __get_source_bot_message_keyboard(self, id):
-        keyboard_text = "Показать иходное сообщение" 
+        keyboard_text = "Показать исходное сообщение" 
         return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text=keyboard_text, callback_data=f"get_source_transcribed_text id {id}")]])
 
     def __get_short_bot_full_message(self, short_message, truncated_source_text, id):
