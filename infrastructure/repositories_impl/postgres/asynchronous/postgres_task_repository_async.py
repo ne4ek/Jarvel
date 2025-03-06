@@ -22,29 +22,6 @@ class PostgresTasksRepositoryAsync(TasksRepository):
             'VALUES ($1, $2, $3, $4, $5, $6, $7, (SELECT company_id FROM public.company WHERE company_code = $8)) '
             'RETURNING task_id;'
         )
-<<<<<<< HEAD
-        sql_values = (
-            task.executor_id,
-            task.author_id,
-            task.task,
-            task.task_summary,
-            task.deadline_datetime,
-            task.status,
-            task.tag,
-            task.company_code,
-        )
-        result = await connection.fetch(sql_query, *sql_values)
-=======
-        ic(sql_query, 
-                                        task.executor_id,
-                                        task.author_id,
-                                        task.task,
-                                        task.task_summary,
-                                        task.deadline_datetime,
-                                        task.status,
-                                        task.tag,
-                                        task.company_code,)
-        
         result = await connection.fetch(sql_query, 
                                         task.executor_id,
                                         task.author_id,
@@ -54,7 +31,6 @@ class PostgresTasksRepositoryAsync(TasksRepository):
                                         task.status,
                                         task.tag,
                                         task.company_code,)
->>>>>>> ai-parser
 
         return result[0]['task_id'] if result else None
 
