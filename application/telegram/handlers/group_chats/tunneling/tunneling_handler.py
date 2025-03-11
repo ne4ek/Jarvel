@@ -166,19 +166,24 @@ class TunnelingHandler:
         inline_keyboard = []
         connected_chats_to = connected_chats[0]
         connected_chats_from = connected_chats[1]
-        i = 0
+        all_chat_ids = []
+        all_topic_ids = []
         for connected_chat_to in connected_chats_to:
-            chat = await bot.get_chat(chat_id=connected_chat_to.to_chat_id)
-            chat_title = chat.title
-            text_list.append(f"{i + 1} - {chat_title}")
-            inline_keyboard.append([InlineKeyboardButton(text=f"{i+1}", callback_data=f"{tunnelig_type} {connected_chat_to.to_chat_id} {connected_chat_to.to_topic_id} {message.reply_to_message.message_id}")])
-            i += 1
+            if not connected_chat_to.to_chat_id in all_chat_ids:
+                all_chat_ids.append(connected_chat_to.to_chat_id)
+                all_topic_ids.append(connected_chat_to.to_topic_id)
+
         for connected_chat_from in connected_chats_from:
-            chat = await bot.get_chat(chat_id=connected_chat_from.from_chat_id)
+            if not connected_chat_from.from_chat_id in all_chat_ids:
+                all_chat_ids.append(connected_chat_from.from_chat_id)
+                all_topic_ids.append(connected_chat_from.from_topic_id)
+                
+        for i in range(len(all_chat_ids)):
+            chat = await bot.get_chat(chat_id=all_chat_ids[i])
             chat_title = chat.title
             text_list.append(f"{i + 1} - {chat_title}")
-            inline_keyboard.append([InlineKeyboardButton(text=f"{i+1}", callback_data=f"{tunnelig_type} {connected_chat_from.from_chat_id} {connected_chat_from.from_topic_id} {message.reply_to_message.message_id}")])
-            i += 1
+            inline_keyboard.append([InlineKeyboardButton(text=f"{i+1}", callback_data=f"{tunnelig_type} {all_chat_ids[i]} {all_topic_ids[i]} {message.reply_to_message.message_id}")])
+        
         text = "Чатов не найдено." if not text_list else '\n'.join(text_list)
         response["text"] = text
         response["keyboard"] = InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
@@ -187,14 +192,32 @@ class TunnelingHandler:
     async def send_f_message_callback(self, callback):
         bot = callback.message.bot
         chat_id, from_chat_id, topic_id, message_id = await self.__send_base_message_callback(callback)
-        await bot.forward_message(chat_id=chat_id, from_chat_id=from_chat_id, message_thread_id=topic_id, message_id = message_id)
-        await callback.message.reply("Отправлено")
+        try:
+            await bot.forward_message(chat_id=chat_id, from_chat_id=from_chat_id, message_thread_id=topic_id, message_id = message_id)
+        except TelegramBadRequest as tbr:
+            try:
+                await bot.forward_message(chat_id=chat_id, from_chat_id=from_chat_id, message_id = message_id)
+            except TelegramBadRequest as tbr_inner:
+                await self.send_message_callback(callback)
+            else:
+                await callback.message.reply("Отправлено")
+        else:
+            await callback.message.reply("Отправлено")
         
     async def send_message_callback(self, callback):
         bot = callback.message.bot
         chat_id, from_chat_id, topic_id, message_id = await self.__send_base_message_callback(callback)
-        await bot.copy_message(chat_id=chat_id, from_chat_id=from_chat_id, message_thread_id=topic_id, message_id = message_id)
-        await callback.message.reply("Отправлено")
+        try:
+            await bot.copy_message(chat_id=chat_id, from_chat_id=from_chat_id, message_thread_id=topic_id, message_id = message_id)
+        except TelegramBadRequest as tbr:
+            try:
+                await bot.copy_message(chat_id=chat_id, from_chat_id=from_chat_id, message_id = message_id)
+            except TelegramBadRequest as tbr_inner:
+                await callback.message.reply("Возникла ошибка при отправке сообщения")
+            else:
+                await callback.message.reply("Отправлено")
+        else:
+            await callback.message.reply("Отправлено")
     
     async def __send_base_message_callback(self, callback):
         await callback.answer()
