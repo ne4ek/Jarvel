@@ -12,7 +12,6 @@ from domain.entities.transcribed_message import TranscribedMessage
 from icecream import ic
 from aiogram.exceptions import TelegramBadRequest
 import re
-
 import os
 
 class ProcessMessageHandlers:
