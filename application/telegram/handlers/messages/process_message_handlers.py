@@ -41,16 +41,20 @@ class ProcessMessageHandlers:
         return wrapped
     
     async def tunneling_is_on(self, message: types.Message, **kwargs) -> bool:
-        ic("tunneling_check")
-        tunneling_message = TunnelingMessage(from_chat_id=message.chat.id, from_topic_id=message.message_thread_id)
+        tunneling_message = TunnelingMessage(from_chat_id=message.chat.id, from_topic_id=self.__get_topic_id(message))
         tunneling_messages_from_db = await self.tunneling_repository.get_by_from_info(tunneling_message)
         if not tunneling_messages_from_db:
             return False
         await self.__make_tunneling(message)
         return False
 
+    def __get_topic_id(self, message: types.Message) -> int | None:
+        return message.message_thread_id if message.chat.is_forum else None
+
+
     async def __make_tunneling(self, message: types.Message):
-        tunneling_message = TunnelingMessage(from_chat_id=message.chat.id, from_topic_id=message.message_thread_id)
+        ic("tunneling_is_on")
+        tunneling_message = TunnelingMessage(from_chat_id=message.chat.id, from_topic_id=self.__get_topic_id(message))
         tunneling_messages_from_db = await self.tunneling_repository.get_by_from_info(tunneling_message)
         try:
             await self.tunneling_message_service.make_forward_tunneling(message, tunneling_messages_from_db)
@@ -122,9 +126,9 @@ class ProcessMessageHandlers:
                 bot_message = await bot_message.edit_text(text=response.get("message"), reply_markup=response.get("keyboard"), parse_mode=parse_mode)
                 await self.message_service.save_message(bot_message)
                 if isinstance(message, TranscribedMessage):  
-                    tunneling_message = TunnelingMessage(from_chat_id=message.chat.id, from_topic_id=message.original_message.message_thread_id)
+                    tunneling_message = TunnelingMessage(from_chat_id=message.chat.id, from_topic_id=self.__get_topic_id(message.original_message))
                 else:
-                    tunneling_message = TunnelingMessage(from_chat_id=message.chat.id, from_topic_id=message.message_thread_id)
+                    tunneling_message = TunnelingMessage(from_chat_id=message.chat.id, from_topic_id=self.__get_topic_id(message))
                 tunneling_message_from_db = await self.tunneling_repository.get_by_from_info(tunneling_message)
                 if tunneling_message_from_db:
                     await self.__make_simple_send_tunneling(message, tunneling_message_from_db, text=response.get("message"), reply_markup=response.get("keyboard"))
