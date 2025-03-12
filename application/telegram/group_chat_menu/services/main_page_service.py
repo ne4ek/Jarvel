@@ -50,7 +50,13 @@ class MainPageService:
         return self.mailing_assistant.compose_telegram_filling_message(mail, go_to_main_menu_button=True)
     
     async def get_info_menu(self, chat_id):
-        group_chat_info_text = """Информация о чате {chat_name}
+        keyboard = get_go_to_main_menu_keyboard()
+        is_group_chat_aassigned_to_company = await self.group_chat_repository.is_group_chat_assigned_to_company(chat_id)
+        telegram_link = f"https://t.me/c/{str(chat_id).replace('-100', '')}"
+        if not is_group_chat_aassigned_to_company:
+            text = f"Сылка на чат: {telegram_link}"
+            return {"text": text, "keyboard": None}
+        group_chat_info_text = """Информация о чате {chat_name}({telegram_link})
 
 <u>Компания {company_name}</u>
 Код компании: {company_code}
@@ -67,8 +73,7 @@ class MainPageService:
         participants_list = [f"{user.full_name} ({user.username})" for user in participants_users]
         text = group_chat_info_text.format(chat_name=group_chat.name, company_name=company_name,
                                            company_code=group_chat.company_code, description=description,
-                                           participants="\n".join(participants_list))
-        keyboard = get_go_to_main_menu_keyboard()
+                                           participants="\n".join(participants_list), telegram_link=telegram_link)
         return {"text": text, "keyboard": keyboard}
     
     async def get_edit_chat_menu(self, chat_id: int):
@@ -92,3 +97,8 @@ class MainPageService:
             pass
             text = "Вы успешно удалили чат из компании! Для привязки другой компании введите команду /add_chat_to_company"
             return {"text": text, "keyboard": None}
+        
+        
+    def __get_chat_link_from_chat_id(self, chat_id):
+        chat_id = str(chat_id)
+        chat_id.replace("-100", "").replace("-1")
