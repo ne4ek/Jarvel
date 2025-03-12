@@ -5,6 +5,7 @@ from application.messages.usecases.summarize_message import SummarizeMessage
 from application.messages.usecases.transcribe_voice_message import TranscribeTelegramMessage
 from application.messages.usecases.is_bot_mentioned_usecase import IsBotMentionedUseCase
 from application.messages.services.message_service import TelegramMessageService
+from application.tunneling.tunneling_message_service import TunnelingMessageService
 from application.telegram.handlers.messages.process_message_handlers import ProcessMessageHandlers
 from ai.summarization_prompts import summarization_prompt
 from infrastructure.config.repository_provider_async_config import repositroties_dependency_provider_async
@@ -43,6 +44,8 @@ message_service = TelegramMessageService(repository_provider=repositroties_depen
                                          usecases=usecases_provider,
                                          distributor=distributor)
 
-messages_handlers = ProcessMessageHandlers(message_service=message_service, repository_provider = repositroties_dependency_provider_async)
+tunneling_message_service = TunnelingMessageService()
+
+messages_handlers = ProcessMessageHandlers(message_service=message_service, repository_provider = repositroties_dependency_provider_async, tunneling_message_service=tunneling_message_service)
 
 messages_router = messages_handlers.get_router()

@@ -18,7 +18,7 @@ class GroupChatCommandHandlers:
         await message.reply(response)
 
     async def main_menu_command(self, message: types.Message):
-        text = "Главное менюnr"
+        text = "Главное меню"
         
         await message.answer(text=text, reply_markup=self.main_menu_keyboard)
         

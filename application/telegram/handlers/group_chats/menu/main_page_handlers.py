@@ -66,7 +66,7 @@ class GroupMenuMainPageHandlers:
         keyboard = response.get("keyboard")
         await callback.message.edit_text(text=text, reply_markup=keyboard)
     
-    @group_chat_callback_decorator
+    # @group_chat_callback_decorator
     async def info_button_callback_handler(self, callback: types.CallbackQuery, state: FSMContext):
         await state.clear()
         response = await self.menu_service.get_info_menu(callback.message.chat.id)
