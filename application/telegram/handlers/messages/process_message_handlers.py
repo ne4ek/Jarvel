@@ -29,30 +29,15 @@ class ProcessMessageHandlers:
 
     def register_handlers(self, router: Router):
         router.message(F.chat.type != "private", self._async_filter(self.tunneling_is_on))(self.message_handler)
-        router.message(F.chat.type != "private", F.func(self.ignore_message))(self.ignore_message_handler)
         router.message(F.chat.type != "private", F.func(self.contains_ctrl_in_words))(self.ctrl_message_handler)
         router.message(F.chat.type != "private", F.func(self.contains_up_in_words))(self.up_message_handler)
         router.message(F.chat.type != "private", F.func(self.contains_vipolnil_in_words))(self.up_ready_handler)
         router.message(F.chat.type != "private")(self.message_handler)
-        router.callback_query.register(self.task_confirmation_callback, F.data.startswith("create_task"))
-        router.callback_query.register(self.meeting_confirmation_callback, F.data.startswith("create_meeting"))
-        router.callback_query.register(self.mailing_confirmation_callback, F.data.startswith("create_mailing"))
-        router.callback_query.register(self.cancel_assistant_generation, F.data.startswith("cancel_assistant_generation"))
-
 
     def _async_filter(self, coro_func):
         async def wrapped(*args, **kwargs):
             return await coro_func(*args, **kwargs)
         return wrapped
-    
-    def ignore_message(self, message: types.Message) -> bool:
-        for phrase in PHRASES_FOR_IGNORE_MESSAGE:
-            if phrase in message.text:
-                return True
-        return False
-    
-    async def ignore_message_handler(self, message: types.Message):
-        return
     
     async def tunneling_is_on(self, message: types.Message, **kwargs) -> bool:
         tunneling_message = TunnelingMessage(from_chat_id=message.chat.id, from_topic_id=self.__get_topic_id(message))
@@ -108,9 +93,9 @@ class ProcessMessageHandlers:
         if message.forward_from:
             return
         text = message.text
-        # if message.reply_to_message:
-        #     replyed_message = message.reply_to_message
-        #     text = f"@{replyed_message.from_user.username}  {replyed_message.text} {text}"
+        if message.reply_to_message:
+            replyed_message = message.reply_to_message
+            text = f"@{replyed_message.from_user.username}  {replyed_message.text} {text}"
         bot = await message.bot.get_me()
         bot_username = bot.username
         sender_username = "@" + message.from_user.username
@@ -129,16 +114,9 @@ class ProcessMessageHandlers:
             await self.message_service.save_message(message)
             if not self.message_service.is_bot_mentioned(message_text):
                 return
-            assistant = await self.message_service.get_assistant(message)
+                
             bot_message = await message.reply(text="Обрабатываю запрос...")
-            if isinstance(assistant, TaskAssistant):
-                response: dict = self.__get_task_confirmation_messages(message)
-            elif isinstance(assistant, MeetingAssistant):
-                response: dict = self.__get_meeting_confirmation_messages(message)
-            elif isinstance(assistant, MailingAssistant):
-                response: dict = self.__get_mailing_confirmation_messages(message)
-            else:
-                response: dict = await self.message_service.call_assistant(bot_message, message, state)
+            response: dict = await self.message_service.call_assistant(bot_message, message, state)
             try:
                 if response:
                     parse_mode = response.get("parse_mode") if "parse_mode" in response.keys() else ParseMode.HTML
@@ -160,80 +138,6 @@ class ProcessMessageHandlers:
                 await bot_message.edit_text(text="Ошибка обработки сообщения")
                 raise e
                     
-    def __get_task_confirmation_messages(self, message: types.Message):
-        text = "Вы уверены, что хотите создать задачу?"
-        keyboard = InlineKeyboardMarkup(
-            inline_keyboard=[
-                [InlineKeyboardButton(text="Да", callback_data="create_task"), 
-                InlineKeyboardButton(text="Нет", callback_data="cancel_assistant_generation")]
-            ]
-        )
-        return {"message": text, "keyboard": keyboard}
-    
-    def __get_meeting_confirmation_messages(self, message: types.Message):
-        text = "Вы уверены, что хотите создать встречу?"
-        keyboard = InlineKeyboardMarkup(
-            inline_keyboard=[
-                [InlineKeyboardButton(text="Да", callback_data="create_meeting"), 
-                InlineKeyboardButton(text="Нет", callback_data="cancel_assistant_generation")]
-            ]
-        )
-        return {"message": text, "keyboard": keyboard}
-    
-    def __get_mailing_confirmation_messages(self, message: types.Message):
-        text = "Вы уверены, что хотите создать рассылку?"
-        keyboard = InlineKeyboardMarkup(
-            inline_keyboard=[
-                [InlineKeyboardButton(text="Да", callback_data="create_mailing"), 
-                InlineKeyboardButton(text="Нет", callback_data="cancel_assistant_generation")]
-            ]
-        )
-        return {"message": text, "keyboard": keyboard}
-    
-    async def task_confirmation_callback(self, callback: types.CallbackQuery, state: FSMContext):
-        ic("task_confirmation_callback")
-        await callback.answer()
-        response = await self.message_service.call_assistant(
-            bot_message=callback.message,
-            user_message=callback.message.reply_to_message,
-            state=state,
-            assistant=await self.message_service.get_task_assistant()
-        )
-        await callback.message.edit_text(text=response.get("message"), reply_markup=response.get("keyboard"), parse_mode=response.get("parse_mode"))
-        
-        
-    async def meeting_confirmation_callback(self, callback: types.CallbackQuery, state: FSMContext):
-        ic("meeting_confirmation_callback")
-        await callback.answer()     
-        response = await self.message_service.call_assistant(
-            bot_message=callback.message,
-            user_message=callback.message.reply_to_message,
-            state=state,
-            assistant=await self.message_service.get_meeting_assistant()
-        )
-        await callback.message.edit_text(text=response.get("message"), reply_markup=response.get("keyboard"), parse_mode=response.get("parse_mode"))
-
-    async def mailing_confirmation_callback(self, callback: types.CallbackQuery, state: FSMContext):
-        ic("mailing_confirmation_callback")
-        await callback.answer()
-        response = await self.message_service.call_assistant(
-            bot_message=callback.message,
-            user_message=callback.message.reply_to_message,
-            state=state,
-            assistant=await self.message_service.get_mailing_assistant()
-        )
-        await callback.message.edit_text(text=response.get("message"), reply_markup=response.get("keyboard"), parse_mode=response.get("parse_mode"))
-        
-    async def cancel_assistant_generation(self, callback: types.CallbackQuery, state: FSMContext):
-        ic("cancel_assistant_generation")
-        await callback.answer()
-        response = await self.message_service.call_assistant(
-            bot_message=callback.message,
-            user_message=callback.message.reply_to_message,
-            state=state,
-        )
-        await callback.message.edit_text(text=response.get("message"), reply_markup=response.get("keyboard"), parse_mode=response.get("parse_mode"))
-        
     async def up_message_handler(self, message: types.Message):
         ic("up_message_handler")
         up_result = await self.message_service.process_up(message)
