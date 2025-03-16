@@ -31,7 +31,6 @@ class PostgresTasksRepositoryAsync(TasksRepository):
                                         task.status,
                                         task.tag,
                                         task.company_code,)
-
         return result[0]['task_id'] if result else None
 
 
