@@ -153,7 +153,11 @@ CREATE TABLE IF NOT EXISTS public.tunneling(
     to_chat_id BIGINT NOT NULL,
     to_topic_id INT NOT NULL,
     from_chat_id BIGINT NOT NULL,
-    from_topic_id INT NOT NULL
+    from_topic_id INT NOT NULL,
+    tunnel_type TEXT NOT NULL DEFAULT 'one_way',
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    company_code TEXT NOT NULL DEFAULT 'Belomorie',
+    user_id BIGINT NOT NULL DEFAULT 0
 );
 
 
