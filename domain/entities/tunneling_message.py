@@ -11,5 +11,5 @@ class TunnelingMessage:
     from_topic_id: Optional[int] = field(default=None)
     tunnel_type: Optional[str] = field(default='one_way')
     is_active: Optional[bool] = field(default=True)
-    company_code: Optional[str] = field(default='Belomorie')
-    user_id: Optional[int] = field(default=0)
+    company_id: Optional[int] = field(default=None)
+    user_id: Optional[int] = field(default=None)

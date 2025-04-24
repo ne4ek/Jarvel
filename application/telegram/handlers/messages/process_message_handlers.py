@@ -51,10 +51,7 @@ class ProcessMessageHandlers:
         return
     
     async def tunneling_is_on(self, message: types.Message, **kwargs) -> bool:
-        tunneling_message = TunnelingMessage(from_chat_id=message.chat.id, from_topic_id=self.__get_topic_id(message))
-        tunneling_messages_from_db = await self.tunneling_repository.get_by_from_info(tunneling_message)
-        if not tunneling_messages_from_db:
-            return False
+        
         await self.__make_tunneling(message)
         return False
 
@@ -62,14 +59,15 @@ class ProcessMessageHandlers:
         return message.message_thread_id if message.chat.is_forum else None
 
 
-    async def __make_tunneling(self, message: types.Message):
-        ic("tunneling_is_on")
+    async def __make_tunneling(self, message: types.Message):  
         tunneling_message = TunnelingMessage(from_chat_id=message.chat.id, from_topic_id=self.__get_topic_id(message))
-        tunneling_messages_from_db = await self.tunneling_repository.get_by_from_info(tunneling_message)
-        try:
-            await self.tunneling_message_service.make_forward_tunneling(message, tunneling_messages_from_db)
-        except TelegramBadRequest as tbr:
-            await self.tunneling_message_service.make_send_tunneling(message, tunneling_messages_from_db)
+        tunneling_messages_from_db = await self.tunneling_repository.get_any_by_from_info(tunneling_message)
+        ic(tunneling_messages_from_db)
+        if not tunneling_messages_from_db :
+            return
+        ic("tunneling_is_on")
+        await self.tunneling_message_service.tunnel(message, tunneling_messages_from_db)
+
 
     async def __make_simple_send_tunneling(self, message: types.Message, tunneling_messages_from_db: TunnelingMessage, text, reply_markup):
         bot = message.bot
@@ -139,7 +137,7 @@ class ProcessMessageHandlers:
                     tunneling_message = TunnelingMessage(from_chat_id=message.chat.id, from_topic_id=self.__get_topic_id(message.original_message))
                 else:
                     tunneling_message = TunnelingMessage(from_chat_id=message.chat.id, from_topic_id=self.__get_topic_id(message))
-                tunneling_message_from_db = await self.tunneling_repository.get_by_from_info(tunneling_message)
+                tunneling_message_from_db = await self.tunneling_repository.get_any_by_from_info(tunneling_message)
                 if tunneling_message_from_db:
                     await self.__make_simple_send_tunneling(message, tunneling_message_from_db, text=response.get("message"), reply_markup=response.get("keyboard"))
             except TelegramBadRequest as tbr:

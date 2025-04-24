@@ -261,7 +261,7 @@ def audio_to_text_converter(handler):
             if duration > MAX_VOICE_DURATION:
                 finally_message_for_send["text"] = "Сообщение слишком длинное"
                 await message.reply(finally_message_for_send["text"], parse_mode="HTML")
-                tunneling_messages_from_db = await transcribe_message.tunneling_repository.get_by_from_info(TunnelingMessage(
+                tunneling_messages_from_db = await transcribe_message.tunneling_repository.get_any_by_from_info(TunnelingMessage(
                     from_chat_id=message.chat.id,
                     from_topic_id=message.message_thread_id,
                 ))
@@ -287,7 +287,7 @@ def audio_to_text_converter(handler):
                     await bot_message.edit_text(text = finally_message_for_send["text"], 
                                                 reply_markup = finally_message_for_send["keyboard"],
                                                 parse_mode="HTML")
-                    tunneling_messages_from_db = await transcribe_message.tunneling_repository.get_by_from_info(TunnelingMessage(
+                    tunneling_messages_from_db = await transcribe_message.tunneling_repository.get_any_by_from_info(TunnelingMessage(
                         from_chat_id=message.chat.id,
                         from_topic_id=message.message_thread_id,
                     ))

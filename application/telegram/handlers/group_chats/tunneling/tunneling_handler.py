@@ -74,9 +74,10 @@ class TunnelingHandler:
             from_chat_id, from_topic_id = self.__get_chat_topik_id_from_link(link)
             to_chat_id, to_topic_id = self.__get_chat_topik_id_from_message(message)
             tunneling_message = TunnelingMessage(to_chat_id=to_chat_id, to_topic_id=to_topic_id,
-                            from_chat_id=from_chat_id, from_topic_id=from_topic_id) 
+                            from_chat_id=from_chat_id, from_topic_id=from_topic_id, user_id=message.from_user.id, is_active=True) 
             await self.__create_tunnel(message, tunneling_message)
         await state.clear()
+
     async def tunnel_waiting_for_chat_link_to(self, message: Message, state: FSMContext):
         link = message.text.strip()
         if not self.is_telegram_link(link):
@@ -85,13 +86,13 @@ class TunnelingHandler:
             to_chat_id, to_topic_id = self.__get_chat_topik_id_from_link(link)
             from_chat_id, from_topic_id = self.__get_chat_topik_id_from_message(message)
             tunneling_message = TunnelingMessage(to_chat_id=to_chat_id, to_topic_id=to_topic_id,
-                            from_chat_id=from_chat_id, from_topic_id=from_topic_id) 
+                            from_chat_id=from_chat_id, from_topic_id=from_topic_id, user_id=message.from_user.id, is_active=True) 
             await self.__create_tunnel(message, tunneling_message)
         await state.clear()
     
     async def __create_tunnel(self, message: Message, tunneling_message: TunnelingMessage):
         bot = message.bot
-        tunneling_message_from_db = await self.tunneling_repository.get_by_full_info(tunneling_message)
+        tunneling_message_from_db = await self.tunneling_repository.get_any_by_full_info(tunneling_message)
         if tunneling_message_from_db:
             await message.reply("Туннель уже существует.")
         else:
@@ -151,7 +152,7 @@ class TunnelingHandler:
 
     async def __stop_tunnel_base(self, message: Message, tunneling_message: TunnelingMessage):
         bot = message.bot
-        tunneling_message_from_db = await self.tunneling_repository.get_by_full_info(tunneling_message) 
+        tunneling_message_from_db = await self.tunneling_repository.get_any_by_full_info(tunneling_message) 
         if not tunneling_message_from_db:
             await message.reply("Туннеля не существует.")
         else:
@@ -195,7 +196,10 @@ class TunnelingHandler:
 
     def __get_chat_topik_id_from_message(self, message: Message) -> tuple[str]:
         chat_id = message.chat.id
-        topic_id = message.message_thread_id
+        if message.chat.is_forum:
+            topic_id = message.message_thread_id
+        else:
+            topic_id = None
         return (chat_id, topic_id)
 
 

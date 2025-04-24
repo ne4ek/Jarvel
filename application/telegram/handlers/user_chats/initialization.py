@@ -11,6 +11,7 @@ from infrastructure.config.user_chats.main_menu_config import main_menu_router
 from infrastructure.config.user_chats.profile_menu_config import profile_menu_router
 from infrastructure.config.user_chats.mailing_config import user_chat_mailing_router, user_chat_mail_inbox_router
 from infrastructure.config.user_chats.compose_mailing_config import user_compose_mail_router
+from infrastructure.config.user_chats.tunneling.tunneling_config import tunneling_menu_router
 from application.messages.message_transcriber import transcribe_message_router
 
 user_chats_router = Router()
@@ -29,7 +30,6 @@ user_chats_router.include_routers(
 
     user_chat_mailing_router,
     user_chat_mail_inbox_router,
-    
+    tunneling_menu_router,
     transcribe_message_router,
-    
 )   

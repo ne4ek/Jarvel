@@ -11,10 +11,15 @@ class TunnelingMessageService:
     def __init__(self) -> None:
         pass
     
+    async def tunnel(self, message: types.Message, tunneling_messages_from_db: list[TunnelingMessage]) -> None:
+        await self.make_forward_tunneling(message, tunneling_messages_from_db)
+
     async def make_forward_tunneling(self, message: types.Message, tunneling_messages_from_db: TunnelingMessage) -> None:
         bot = message.bot
         try:
             for tunneling_message_from_db in tunneling_messages_from_db:
+                if not tunneling_message_from_db.is_active:
+                    continue
                 if message.reply_to_message:
                     await bot.forward_message(chat_id=tunneling_message_from_db.to_chat_id, 
                                         from_chat_id = tunneling_message_from_db.from_chat_id,

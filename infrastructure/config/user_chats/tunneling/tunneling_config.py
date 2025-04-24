@@ -1,0 +1,13 @@
+from application.tasks.services.tunneling_service import TunnelingService
+from infrastructure.providers_impl.repositories_provider_async_impl import RepositoriesDependencyProviderImplAsync
+from infrastructure.config.repository_provider_async_config import repositroties_dependency_provider_async
+
+from application.telegram.handlers.user_chats.user_chat_menu.tunneling_menu_handlers import TunnelingMenuHandlers
+
+
+
+tunneling_service = TunnelingService(repository_provider=repositroties_dependency_provider_async)
+
+tunneling_menu_handlers = TunnelingMenuHandlers(tunneling_service=tunneling_service)
+
+tunneling_menu_router = tunneling_menu_handlers.get_router()
